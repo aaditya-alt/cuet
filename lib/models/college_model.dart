@@ -94,13 +94,14 @@ class CategoryCutoff {
 
 // User Score Model to pass around
 class UserScore {
-  double english;
-  double domain1;
-  double domain2;
-  double domain3;
+  double english;      // Language paper score (0-200)
+  double domain1;      // Primary domain score (0-200)
+  double domain2;      // Optional 2nd domain score (0-200)
+  double domain3;      // Optional 3rd domain score (0-200)
   double generalTest;
   String category;
   String gender;
+  String domainSubject; // Selected CUET domain subject (e.g. "Mathematics/Applied Mathematics")
 
   UserScore({
     this.english = 0,
@@ -110,13 +111,14 @@ class UserScore {
     this.generalTest = 0,
     this.category = 'General',
     this.gender = 'Male',
+    this.domainSubject = 'Mathematics/Applied Mathematics',
   });
 
+  /// Composite score = Language + Domain1 + Domain2 + Domain3 (max 800)
   double getTotalScore(bool includeGT) {
     if (includeGT) {
-      // Logic varies, but for simplicity let's say total is out of 800 (Lang + 3 domains) or include GT out of 850
       return english + domain1 + domain2 + domain3 + generalTest;
     }
-    return english + domain1 + domain2 + domain3; // Out of 800
+    return english + domain1 + domain2 + domain3;
   }
 }

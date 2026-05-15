@@ -85,10 +85,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
-                            _getIcon(_onboardingData[index]["icon"]!),
-                            size: 120,
-                            color: Theme.of(context).colorScheme.primary,
+                          child: Center(
+                            child: Container(
+                              height: 180,
+                              width: 180,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: index == 0
+                                  ? ClipOval(
+                                      child: Image.asset(
+                                        'assets/images/app_logo.jpeg',
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Icon(
+                                            _getIcon(_onboardingData[index]["icon"]!),
+                                            size: 100,
+                                            color: Theme.of(context).colorScheme.primary,
+                                          );
+                                        },
+                                      ),
+                                    )
+                                  : Icon(
+                                      _getIcon(_onboardingData[index]["icon"]!),
+                                      size: 100,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 60),

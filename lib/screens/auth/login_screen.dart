@@ -55,7 +55,34 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 40),
-              Icon(LucideIcons.graduationCap, size: 80, color: theme.colorScheme.primary),
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                    border: Border.all(color: theme.colorScheme.primary.withOpacity(0.1), width: 1),
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/app_logo.jpeg',
+                      height: 80,
+                      width: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(LucideIcons.graduationCap, size: 60, color: theme.colorScheme.primary);
+                      },
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
               Text(
                 'Welcome Back',

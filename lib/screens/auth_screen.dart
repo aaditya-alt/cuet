@@ -44,45 +44,61 @@ class AuthScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              const Spacer(flex: 2),
-              // Logo / Icon
-              Container(
-                padding: const EdgeInsets.all(28),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                // Logo / Icon
+                Container(
+                  width: 170,
+                  height: 170,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/app_logo.jpeg',
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          LucideIcons.graduationCap,
+                          size: 90,
+                          color: Colors.blue,
+                        );
+                      },
+                    ),
+                  ),
                 ),
-                child: const Icon(
-                  LucideIcons.graduationCap,
-                  size: 80,
-                  color: Colors.white,
+                const SizedBox(height: 32),
+                // Title
+                Text(
+                  'DU Cutoff Predictor',
+                  style: GoogleFonts.outfit(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
-              // Title
-              Text(
-                'DU Cutoff Predictor',
-                style: GoogleFonts.outfit(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
+                const SizedBox(height: 12),
+                Text(
+                  'Your gateway to Delhi University\nFind your perfect college match',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    color: Colors.white.withOpacity(0.85),
+                    height: 1.6,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Your gateway to Delhi University\nFind your perfect college match',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  color: Colors.white.withOpacity(0.85),
-                  height: 1.6,
-                ),
-              ),
-              const Spacer(flex: 2),
+                const SizedBox(height: 40),
 
               // Bottom Card
               Container(
@@ -206,6 +222,7 @@ class AuthScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

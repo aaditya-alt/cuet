@@ -6,6 +6,7 @@ import '../../models/college_model.dart';
 import 'package:provider/provider.dart';
 import '../../providers/wishlist_provider.dart';
 import '../../providers/compare_provider.dart';
+import '../../providers/cutoff_provider.dart';
 import '../compare/compare_screen.dart';
 
 import 'package:share_plus/share_plus.dart';
@@ -22,6 +23,7 @@ class CollegeDetailsScreen extends StatefulWidget {
 class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
   late String _selectedCategory;
   late CourseCutoff _selectedCourse;
+  String _selectedProgram = ''; // real-data program selector in cutoff section
 
   CollegeModel get college => widget.college;
 
@@ -30,6 +32,7 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
     super.initState();
     _selectedCategory = 'General';
     _selectedCourse = widget.college.courses.first;
+    _selectedProgram = '';
   }
 
   @override
@@ -372,149 +375,182 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
   }
 
   Widget _buildCutoffDetails(ThemeData theme) {
-    final categories = ['General', 'OBC', 'SC', 'ST', 'EWS'];
-    final cutoffData = _selectedCourse.cutoffs[_selectedCategory];
+    final cutoffProvider = Provider.of<CutoffProvider>(context);
+
+    // All programs available for this college from real JSON data
+    final realPrograms = cutoffProvider.getProgramsForCollege(college.name);
+
+    // Determine which program to display
+    String displayProgram = _selectedProgram.isNotEmpty
+        ? _selectedProgram
+        : _selectedCourse.courseName;
+    if (realPrograms.isNotEmpty &&
+        !realPrograms.any((p) => p.toLowerCase().contains(
+            displayProgram.toLowerCase().split(' ').first.toLowerCase()))) {
+      displayProgram = realPrograms.first;
+    }
+
+    // Fetch all-category cutoffs from real JSON
+    final Map<String, double>? allCategoryCutoffs =
+        cutoffProvider.getAllCategoriesForProgram(college.name, displayProgram);
+
+    final bool hasRealData =
+        allCategoryCutoffs != null && allCategoryCutoffs.isNotEmpty;
+
+    // Ordered categories for display
+    const categoryOrder = ['UR', 'OBC', 'SC', 'ST', 'EWS', 'PwBD'];
+    const categoryLabels = {
+      'UR': 'General (UR)',
+      'OBC': 'OBC',
+      'SC': 'SC',
+      'ST': 'ST',
+      'EWS': 'EWS',
+      'PwBD': 'PwD (PwBD)',
+    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Cutoff Insights'),
-        const SizedBox(height: 16),
-        
-        // Course Selector
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: theme.brightness == Brightness.dark ? Colors.white.withOpacity(0.05) : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: theme.dividerColor),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<CourseCutoff>(
-              isExpanded: true,
-              value: _selectedCourse,
-              items: widget.college.courses.map((course) {
-                return DropdownMenuItem(
-                  value: course,
-                  child: Text(course.courseName, style: GoogleFonts.outfit(fontSize: 15)),
-                );
-              }).toList(),
-              onChanged: (val) {
-                if (val != null) setState(() => _selectedCourse = val);
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Category Selector (Horizontal Chips)
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: categories.map((cat) {
-              final isSelected = _selectedCategory == cat;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  label: Text(cat),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) setState(() => _selectedCategory = cat);
-                  },
-                  selectedColor: theme.colorScheme.primary,
-                  labelStyle: GoogleFonts.outfit(
-                    color: isSelected ? Colors.white : theme.textTheme.bodyMedium?.color,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        // Header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionTitle('Round 1 Cutoffs 2025'),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: hasRealData
+                    ? Colors.green.withOpacity(0.1)
+                    : Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                    color: hasRealData
+                        ? Colors.green.withOpacity(0.3)
+                        : Colors.orange.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    hasRealData
+                        ? LucideIcons.shieldCheck
+                        : LucideIcons.alertCircle,
+                    size: 12,
+                    color: hasRealData ? Colors.green : Colors.orange,
                   ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-        const SizedBox(height: 24),
-
-        if (cutoffData != null) ...[
-          // Round-wise Stats
-          Row(
-            children: [
-              _buildRoundCard('Round 1', cutoffData.round1.toStringAsFixed(0), theme),
-              const SizedBox(width: 12),
-              _buildRoundCard('Round 2', cutoffData.round2.toStringAsFixed(0), theme),
-              const SizedBox(width: 12),
-              _buildRoundCard('Round 3', cutoffData.round3.toStringAsFixed(0), theme),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Chart Section
-          Container(
-            height: 200,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.brightness == Brightness.dark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: theme.dividerColor),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Round-wise Cutoff Visualization',
-                  style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
-                ),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: BarChart(
-                    BarChartData(
-                      alignment: BarChartAlignment.spaceAround,
-                      maxY: 800,
-                      barTouchData: BarTouchData(enabled: false),
-                      titlesData: FlTitlesData(
-                        show: true,
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (value, meta) {
-                              const style = TextStyle(fontSize: 10, fontWeight: FontWeight.bold);
-                              switch (value.toInt()) {
-                                case 0: return const Text('R1', style: style);
-                                case 1: return const Text('R2', style: style);
-                                case 2: return const Text('R3', style: style);
-                                default: return const Text('');
-                              }
-                            },
-                          ),
-                        ),
-                        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      ),
-                      gridData: const FlGridData(show: false),
-                      borderData: FlBorderData(show: false),
-                      barGroups: [
-                        _makeBarGroup(0, cutoffData.round1, theme.colorScheme.primary),
-                        _makeBarGroup(1, cutoffData.round2, theme.colorScheme.secondary),
-                        _makeBarGroup(2, cutoffData.round3, Colors.orange),
-                      ],
+                  const SizedBox(width: 4),
+                  Text(
+                    hasRealData ? 'Verified 2025 Data' : 'No data available',
+                    style: GoogleFonts.outfit(
+                      color:
+                          hasRealData ? Colors.green : Colors.orange,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Program selector (from real data if available, else from mock)
+        if (realPrograms.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.dividerColor),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: realPrograms.contains(displayProgram)
+                    ? displayProgram
+                    : realPrograms.first,
+                items: realPrograms
+                    .map((p) => DropdownMenuItem(
+                          value: p,
+                          child: Text(p,
+                              style: GoogleFonts.outfit(fontSize: 14),
+                              overflow: TextOverflow.ellipsis),
+                        ))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedProgram = val);
+                },
+              ),
+            ),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.dividerColor),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<CourseCutoff>(
+                isExpanded: true,
+                value: _selectedCourse,
+                items: widget.college.courses
+                    .map((course) => DropdownMenuItem(
+                          value: course,
+                          child: Text(course.courseName,
+                              style: GoogleFonts.outfit(fontSize: 14)),
+                        ))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedCourse = val);
+                },
+              ),
             ),
           ),
-          const SizedBox(height: 24),
-          
-          // Phased Info / Expectations
-          _buildPhasedInfo(cutoffData, theme),
-        ],
+        const SizedBox(height: 20),
+
+        // Category-wise cutoff table
+        if (hasRealData) ..._buildCutoffTable(
+            allCategoryCutoffs!, categoryOrder, categoryLabels, theme)
+        else
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                children: [
+                  Icon(LucideIcons.fileX,
+                      size: 40, color: Colors.grey.shade300),
+                  const SizedBox(height: 12),
+                  Text(
+                    'No Round 1 cutoff data available\nfor this program.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                        color: Colors.grey, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }
 
-  Widget _buildRoundCard(String label, String value, ThemeData theme) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
+  List<Widget> _buildCutoffTable(
+    Map<String, double> data,
+    List<String> order,
+    Map<String, String> labels,
+    ThemeData theme,
+  ) {
+    final rows = order.where((cat) => data.containsKey(cat)).toList();
+
+    return [
+      Container(
         decoration: BoxDecoration(
           color: theme.cardColor,
           borderRadius: BorderRadius.circular(16),
@@ -522,63 +558,113 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
         ),
         child: Column(
           children: [
-            Text(label, style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
-            const SizedBox(height: 4),
-            Text(value, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+            // Table header
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.08),
+                borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                      child: Text('Category',
+                          style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: theme.colorScheme.primary))),
+                  Text('Round 1 Score (2025)',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: theme.colorScheme.primary)),
+                ],
+              ),
+            ),
+            // Table rows
+            ...rows.asMap().entries.map((entry) {
+              final isLast = entry.key == rows.length - 1;
+              final cat = entry.value;
+              final score = data[cat]!;
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 20, vertical: 14),
+                decoration: BoxDecoration(
+                  border: isLast
+                      ? null
+                      : Border(
+                          bottom:
+                              BorderSide(color: theme.dividerColor)),
+                ),
+                child: Row(
+                  children: [
+                    // Category chip
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _categoryColor(cat).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        labels[cat] ?? cat,
+                        style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _categoryColor(cat),
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    // Score
+                    Text(
+                      score.toStringAsFixed(2),
+                      style: GoogleFonts.outfit(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
           ],
         ),
       ),
-    );
-  }
-
-  BarChartGroupData _makeBarGroup(int x, double y, Color color) {
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: y,
-          color: color,
-          width: 22,
-          borderRadius: BorderRadius.circular(4),
-          backDrawRodData: BackgroundBarChartRodData(
-            show: true,
-            toY: 800,
-            color: color.withOpacity(0.1),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPhasedInfo(CategoryCutoff cutoff, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      const SizedBox(height: 12),
+      // Source note
+      Row(
         children: [
-          Row(
-            children: [
-              Icon(LucideIcons.trendingUp, size: 18, color: theme.colorScheme.primary),
-              const SizedBox(width: 8),
-              Text(
-                'Admission Strategy',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-            ],
+          const Icon(LucideIcons.info, size: 12, color: Colors.grey),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              'Source: DU CSAS 2025 Official Round 1 Allotment Data',
+              style: GoogleFonts.outfit(
+                  fontSize: 11, color: Colors.grey.shade500),
+            ),
           ),
-          const SizedBox(height: 12),
-          _buildStrategyItem('Target Score', '${cutoff.expected2026.toStringAsFixed(0)}+', 'Highly Safe'),
-          const Divider(height: 24),
-          _buildStrategyItem('Waitlist Chance', 'Medium', 'Wait for Round 2/3 if score is >${cutoff.round2.toStringAsFixed(0)}'),
         ],
       ),
-    );
+    ];
   }
+
+  Color _categoryColor(String cat) {
+    switch (cat) {
+      case 'UR':   return Colors.blue;
+      case 'OBC':  return Colors.orange;
+      case 'SC':   return Colors.purple;
+      case 'ST':   return Colors.teal;
+      case 'EWS':  return Colors.green;
+      case 'PwBD': return Colors.red;
+      default:     return Colors.grey;
+    }
+  }
+
+  // _buildRoundCard, _makeBarGroup and _buildPhasedInfo removed —
+  // replaced by _buildCutoffTable / _categoryColor above.
 
   Widget _buildStrategyItem(String label, String value, String sub) {
     return Row(

@@ -14,6 +14,7 @@ import 'providers/user_score_provider.dart';
 import 'providers/wishlist_provider.dart';
 import 'providers/filter_provider.dart';
 import 'providers/compare_provider.dart';
+import 'providers/cutoff_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +28,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => WishlistProvider()),
         ChangeNotifierProvider(create: (_) => FilterProvider()),
         ChangeNotifierProvider(create: (_) => CompareProvider()),
+        ChangeNotifierProvider(create: (_) => CutoffProvider()),
       ],
       child: const MyApp(),
     ),
