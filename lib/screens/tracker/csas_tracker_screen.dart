@@ -90,9 +90,26 @@ class _CsasTrackerScreenState extends State<CsasTrackerScreen>
 
   // ── Launch URL ─────────────────────────────────────────────────────────────
   Future<void> _launch(String url) async {
-    final uri = Uri.tryParse(url);
+    final rawUrl = url;
+    if (rawUrl == null || rawUrl.trim().isEmpty) return;
+
+    String fixedUrl = rawUrl.trim();
+    if (!fixedUrl.startsWith('http://') && !fixedUrl.startsWith('https://')) {
+      fixedUrl = 'https://$fixedUrl';
+    }
+
+    final uri = Uri.tryParse(fixedUrl);
     if (uri == null) return;
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        // Show error feedback if you want
+      }
+    } catch (e) {
+      debugPrint('Could not launch $uri: $e');
+    }
   }
 
   @override

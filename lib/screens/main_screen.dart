@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/auth_service.dart';
 import 'auth/login_screen.dart';
@@ -30,6 +31,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    _checkPremiumStatus();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final pendingLink = MyApp.pendingDeepLink;
       if (pendingLink != null) {
@@ -37,6 +39,24 @@ class _MainScreenState extends State<MainScreen> {
         MyApp.handleRawLink(pendingLink);
       }
     });
+  }
+
+  bool _premiumEnabled = false; // default while loading
+
+  Future<void> _checkPremiumStatus() async {
+    try {
+      final res = await Supabase.instance.client
+          .from('admin')
+          .select('premium_enabled')
+          .eq('id', 1)
+          .single();
+      setState(() {
+        _premiumEnabled = res['premium_enabled'] as bool;
+      });
+    } catch (e) {
+      // Fallback – hide premium if something fails
+      setState(() => _premiumEnabled = false);
+    }
   }
 
   void _showMainAuthGuard(BuildContext context) {
@@ -108,7 +128,9 @@ class _MainScreenState extends State<MainScreen> {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -155,7 +177,7 @@ class _MainScreenState extends State<MainScreen> {
       const HomeTab(),
       const DuCollegeDiscoveryScreen(),
       const CommunityHubScreen(),
-      if (appSettings.premiumEnabled) const PremiumScreen(),
+      if (_premiumEnabled) const PremiumScreen(),
       const ProfileTab(),
     ];
 
@@ -185,7 +207,10 @@ class _MainScreenState extends State<MainScreen> {
           currentIndex: activeIndex,
           onTap: (index) {
             if (index == 2) {
-              final authService = Provider.of<AuthService>(context, listen: false);
+              final authService = Provider.of<AuthService>(
+                context,
+                listen: false,
+              );
               if (!authService.isAuthenticated) {
                 _showMainAuthGuard(context);
                 return;
@@ -206,7 +231,7 @@ class _MainScreenState extends State<MainScreen> {
               icon: Icon(LucideIcons.users),
               label: 'Community',
             ),
-            if (appSettings.premiumEnabled)
+            if (_premiumEnabled)
               const BottomNavigationBarItem(
                 icon: Icon(LucideIcons.crown),
                 label: 'Premium',

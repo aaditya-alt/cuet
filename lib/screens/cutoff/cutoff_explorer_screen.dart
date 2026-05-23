@@ -37,7 +37,10 @@ class _CutoffExplorerScreenState extends State<CutoffExplorerScreen> {
   Future<void> _fetchColleges() async {
     setState(() => _isLoadingColleges = true);
     try {
-      final res = await _supabase.from('du_cutoffs').select('college_name');
+      final res = await _supabase
+          .from('du_cutoffs')
+          .select('college_name')
+          .limit(10000); // ← fetch all rows
 
       final rawList = (res as List)
           .map((e) => e['college_name'] as String)
@@ -52,9 +55,6 @@ class _CutoffExplorerScreenState extends State<CutoffExplorerScreen> {
         }
         _isLoadingColleges = false;
       });
-
-      // If you need to load programs after selecting a college,
-      // call _fetchPrograms() here or elsewhere.
     } catch (e) {
       debugPrint('Error fetching colleges: $e');
       setState(() => _isLoadingColleges = false);

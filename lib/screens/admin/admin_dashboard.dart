@@ -102,9 +102,59 @@ class _AdminDashboardState extends State<AdminDashboard>
     super.initState();
     _tabController = TabController(length: 9, vsync: this);
     _fetchUsers();
+    _fetchPremiumFlag();
     _fetchPreferenceSheets();
     _fetchCommunityMessages();
     Provider.of<DuCampusService>(context, listen: false).fetchGuides();
+  }
+
+  bool _premiumEnabled = false; // remote state
+  bool _isLoading = true;
+
+  Future<void> _fetchPremiumFlag() async {
+    try {
+      final res = await Supabase.instance.client
+          .from('admin')
+          .select('premium_enabled')
+          .eq('id', 1)
+          .single();
+      setState(() {
+        _premiumEnabled = res['premium_enabled'] as bool;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _updatePremiumFlag(bool value) async {
+    try {
+      await Supabase.instance.client
+          .from('admin')
+          .update({'premium_enabled': value})
+          .eq('id', 1);
+      setState(() => _premiumEnabled = value);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              value
+                  ? 'Premium features tab enabled system-wide! 👑'
+                  : 'Premium features tab disabled system-wide!',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      // revert on failure
+      setState(() => _premiumEnabled = !value);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update. Please try again.')),
+        );
+      }
+    }
   }
 
   @override
@@ -2026,23 +2076,9 @@ class _AdminDashboardState extends State<AdminDashboard>
                   ),
                 ),
                 Switch.adaptive(
-                  value: appSettings.premiumEnabled,
+                  value: _premiumEnabled,
                   activeColor: theme.colorScheme.primary,
-                  onChanged: (val) async {
-                    await appSettings.togglePremiumEnabled(val);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            val
-                                ? 'Premium features tab enabled system-wide! 👑'
-                                : 'Premium features tab disabled system-wide!',
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  },
+                  onChanged: _updatePremiumFlag,
                 ),
               ],
             ),

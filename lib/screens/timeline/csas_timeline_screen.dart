@@ -169,7 +169,7 @@ class _CsasTimelineScreenState extends State<CsasTimelineScreen> {
           .from('csas_timeline')
           .select()
           .eq('is_active', true)
-          .order('sort_order');
+          .order('sort_order', ascending: true);
       final list = res as List<dynamic>;
       setState(() {
         _events = (list.isNotEmpty ? list : _fallback)
@@ -282,13 +282,6 @@ class _CsasTimelineScreenState extends State<CsasTimelineScreen> {
                       ],
                     ),
                   ),
-                ),
-              ),
-              title: Text(
-                'CSAS Timeline',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -663,12 +656,29 @@ class _TimelineItem extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                         child: OutlinedButton.icon(
                           onPressed: () async {
-                            final uri = Uri.parse(event.linkUrl!);
-                            if (await canLaunchUrl(uri)) {
-                              launchUrl(
-                                uri,
-                                mode: LaunchMode.externalApplication,
-                              );
+                            final rawUrl = event.linkUrl;
+                            if (rawUrl == null || rawUrl.trim().isEmpty) return;
+
+                            String fixedUrl = rawUrl.trim();
+                            if (!fixedUrl.startsWith('http://') &&
+                                !fixedUrl.startsWith('https://')) {
+                              fixedUrl = 'https://$fixedUrl';
+                            }
+
+                            final uri = Uri.tryParse(fixedUrl);
+                            if (uri == null) return;
+
+                            try {
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(
+                                  uri,
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              } else {
+                                // Show error feedback if you want
+                              }
+                            } catch (e) {
+                              debugPrint('Could not launch $uri: $e');
                             }
                           },
                           icon: Icon(
