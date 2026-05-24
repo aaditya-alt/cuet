@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../models/college_model.dart';
 import 'package:provider/provider.dart';
@@ -61,9 +61,11 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                   Text(
                     college.description,
                     style: GoogleFonts.outfit(
-                      fontSize: 15, 
-                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7), 
-                      height: 1.6
+                      fontSize: 15,
+                      color: theme.textTheme.bodyMedium?.color?.withOpacity(
+                        0.7,
+                      ),
+                      height: 1.6,
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -89,7 +91,12 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomBar(context, theme, wishlistProvider, compareProvider),
+      bottomNavigationBar: _buildBottomBar(
+        context,
+        theme,
+        wishlistProvider,
+        compareProvider,
+      ),
     );
   }
 
@@ -103,7 +110,9 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
           fit: StackFit.expand,
           children: [
             Image.network(
-              college.photos.isNotEmpty ? college.photos[0] : 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1000',
+              college.photos.isNotEmpty
+                  ? college.photos[0]
+                  : 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1000',
               fit: BoxFit.cover,
             ),
             DecoratedBox(
@@ -125,17 +134,24 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
       actions: [
         IconButton(
           icon: Icon(
-            wishlistProvider.isInWishlist(college.id) ? LucideIcons.heart : LucideIcons.heart,
-            color: wishlistProvider.isInWishlist(college.id) ? Colors.red : Colors.white,
+            wishlistProvider.isInWishlist(college.id)
+                ? LucideIcons.heart
+                : LucideIcons.heart,
+            color: wishlistProvider.isInWishlist(college.id)
+                ? Colors.red
+                : Colors.white,
           ),
           onPressed: () => wishlistProvider.toggleWishlist(college),
         ),
         IconButton(
           icon: const Icon(LucideIcons.share2, color: Colors.white),
           onPressed: () {
-            final shareUrl = 'https://cuet.collegemitra.net.in/college?name=${Uri.encodeComponent(college.name)}';
-            final appUrl = 'cuet://college?name=${Uri.encodeComponent(college.name)}';
-            final String text = 'Check out ${college.name} on Cuet Predictor!\n\n'
+            final shareUrl =
+                'https://cuet.collegemitra.net.in/college?name=${Uri.encodeComponent(college.name)}';
+            final appUrl =
+                'cuet://college?name=${Uri.encodeComponent(college.name)}';
+            final String text =
+                'Check out ${college.name} on Cuet Predictor!\n\n'
                 '📍 Campus: ${college.campus}\n'
                 '🏆 NIRF Rank: #${college.nirfRanking}\n'
                 '🎓 Courses: ${college.courses.map((c) => c.courseName).take(3).join(", ")}...\n\n'
@@ -163,7 +179,11 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey.shade100),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2)),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
                 ],
               ),
               child: ClipRRect(
@@ -171,7 +191,8 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                 child: Image.network(
                   college.logoUrl,
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(LucideIcons.building2, color: Colors.grey),
+                  errorBuilder: (context, error, stackTrace) =>
+                      const Icon(LucideIcons.building2, color: Colors.grey),
                 ),
               ),
             ),
@@ -182,11 +203,18 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                 children: [
                   Text(
                     college.name,
-                    style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, height: 1.2),
+                    style: GoogleFonts.outfit(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -208,11 +236,18 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
         const SizedBox(height: 8),
         Row(
           children: [
-            Icon(LucideIcons.mapPin, size: 14, color: theme.textTheme.bodySmall?.color),
+            Icon(
+              LucideIcons.mapPin,
+              size: 14,
+              color: theme.textTheme.bodySmall?.color,
+            ),
             const SizedBox(width: 4),
             Text(
               '${college.campus} • ${college.type}',
-              style: GoogleFonts.outfit(color: theme.textTheme.bodySmall?.color, fontSize: 14),
+              style: GoogleFonts.outfit(
+                color: theme.textTheme.bodySmall?.color,
+                fontSize: 14,
+              ),
             ),
           ],
         ),
@@ -222,7 +257,7 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
 
   Widget _buildPhotoGallery(ThemeData theme) {
     if (college.photos.length <= 1) return const SizedBox.shrink();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -254,7 +289,7 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
 
   Widget _buildRankings(ThemeData theme) {
     if (college.rankings.isEmpty) return const SizedBox.shrink();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -267,9 +302,15 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: theme.brightness == Brightness.light ? Colors.orange.shade50 : Colors.orange.withOpacity(0.1),
+                color: theme.brightness == Brightness.light
+                    ? Colors.orange.shade50
+                    : Colors.orange.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: theme.brightness == Brightness.light ? Colors.orange.shade100 : Colors.orange.withOpacity(0.2)),
+                border: Border.all(
+                  color: theme.brightness == Brightness.light
+                      ? Colors.orange.shade100
+                      : Colors.orange.withOpacity(0.2),
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -278,7 +319,11 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                   const SizedBox(width: 6),
                   Text(
                     rank,
-                    style: GoogleFonts.outfit(color: Colors.orange.shade900, fontWeight: FontWeight.w600, fontSize: 13),
+                    style: GoogleFonts.outfit(
+                      color: Colors.orange.shade900,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -310,9 +355,21 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(course.courseName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(
+                        course.courseName,
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(course.duration, style: GoogleFonts.outfit(color: theme.textTheme.bodySmall?.color, fontSize: 12)),
+                      Text(
+                        course.duration,
+                        style: GoogleFonts.outfit(
+                          color: theme.textTheme.bodySmall?.color,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -321,7 +378,11 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                   child: Text(
                     course.fee,
                     textAlign: TextAlign.right,
-                    style: GoogleFonts.outfit(color: theme.colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                    style: GoogleFonts.outfit(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
@@ -343,18 +404,42 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
         const SizedBox(height: 16),
         Row(
           children: [
-            _buildStatCard(theme, 'Highest', info.highestPackage, LucideIcons.trendingUp, Colors.green),
+            _buildStatCard(
+              theme,
+              'Highest',
+              info.highestPackage,
+              LucideIcons.trendingUp,
+              Colors.green,
+            ),
             const SizedBox(width: 12),
-            _buildStatCard(theme, 'Average', info.averagePackage, LucideIcons.barChart, Colors.blue),
+            _buildStatCard(
+              theme,
+              'Average',
+              info.averagePackage,
+              LucideIcons.barChart,
+              Colors.blue,
+            ),
             const SizedBox(width: 12),
-            _buildStatCard(theme, 'Placed', '${info.placementPercentage}%', LucideIcons.checkCircle, Colors.purple),
+            _buildStatCard(
+              theme,
+              'Placed',
+              '${info.placementPercentage}%',
+              LucideIcons.checkCircle,
+              Colors.purple,
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildStatCard(ThemeData theme, String label, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    ThemeData theme,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -368,8 +453,20 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
           children: [
             Icon(icon, size: 18, color: color),
             const SizedBox(height: 8),
-            Text(value, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15)),
-            Text(label, style: GoogleFonts.outfit(color: theme.textTheme.bodySmall?.color, fontSize: 11)),
+            Text(
+              value,
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: theme.textTheme.bodySmall?.color,
+                fontSize: 11,
+              ),
+            ),
           ],
         ),
       ),
@@ -387,14 +484,17 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
         ? _selectedProgram
         : _selectedCourse.courseName;
     if (realPrograms.isNotEmpty &&
-        !realPrograms.any((p) => p.toLowerCase().contains(
-            displayProgram.toLowerCase().split(' ').first.toLowerCase()))) {
+        !realPrograms.any(
+          (p) => p.toLowerCase().contains(
+            displayProgram.toLowerCase().split(' ').first.toLowerCase(),
+          ),
+        )) {
       displayProgram = realPrograms.first;
     }
 
     // Fetch all-category cutoffs from real JSON
-    final Map<String, double>? allCategoryCutoffs =
-        cutoffProvider.getAllCategoriesForProgram(college.name, displayProgram);
+    final Map<String, double>? allCategoryCutoffs = cutoffProvider
+        .getAllCategoriesForProgram(college.name, displayProgram);
 
     final bool hasRealData =
         allCategoryCutoffs != null && allCategoryCutoffs.isNotEmpty;
@@ -419,17 +519,17 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
           children: [
             _buildSectionTitle('Round 1 Cutoffs 2025'),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: hasRealData
                     ? Colors.green.withOpacity(0.1)
                     : Colors.orange.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                    color: hasRealData
-                        ? Colors.green.withOpacity(0.3)
-                        : Colors.orange.withOpacity(0.3)),
+                  color: hasRealData
+                      ? Colors.green.withOpacity(0.3)
+                      : Colors.orange.withOpacity(0.3),
+                ),
               ),
               child: Row(
                 children: [
@@ -444,8 +544,7 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                   Text(
                     hasRealData ? 'Verified 2025 Data' : 'No data available',
                     style: GoogleFonts.outfit(
-                      color:
-                          hasRealData ? Colors.green : Colors.orange,
+                      color: hasRealData ? Colors.green : Colors.orange,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
@@ -475,12 +574,16 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                     ? displayProgram
                     : realPrograms.first,
                 items: realPrograms
-                    .map((p) => DropdownMenuItem(
-                          value: p,
-                          child: Text(p,
-                              style: GoogleFonts.outfit(fontSize: 14),
-                              overflow: TextOverflow.ellipsis),
-                        ))
+                    .map(
+                      (p) => DropdownMenuItem(
+                        value: p,
+                        child: Text(
+                          p,
+                          style: GoogleFonts.outfit(fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
                     .toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _selectedProgram = val);
@@ -503,11 +606,15 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                 isExpanded: true,
                 value: _selectedCourse,
                 items: widget.college.courses
-                    .map((course) => DropdownMenuItem(
-                          value: course,
-                          child: Text(course.courseName,
-                              style: GoogleFonts.outfit(fontSize: 14)),
-                        ))
+                    .map(
+                      (course) => DropdownMenuItem(
+                        value: course,
+                        child: Text(
+                          course.courseName,
+                          style: GoogleFonts.outfit(fontSize: 14),
+                        ),
+                      ),
+                    )
                     .toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _selectedCourse = val);
@@ -518,22 +625,29 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
         const SizedBox(height: 20),
 
         // Category-wise cutoff table
-        if (hasRealData) ..._buildCutoffTable(
-            allCategoryCutoffs!, categoryOrder, categoryLabels, theme)
+        if (hasRealData)
+          ..._buildCutoffTable(
+            allCategoryCutoffs!,
+            categoryOrder,
+            categoryLabels,
+            theme,
+          )
         else
           Center(
             child: Padding(
               padding: const EdgeInsets.all(32),
               child: Column(
                 children: [
-                  Icon(LucideIcons.fileX,
-                      size: 40, color: Colors.grey.shade300),
+                  Icon(
+                    LucideIcons.fileX,
+                    size: 40,
+                    color: Colors.grey.shade300,
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     'No Round 1 cutoff data available\nfor this program.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(
-                        color: Colors.grey, fontSize: 14),
+                    style: GoogleFonts.outfit(color: Colors.grey, fontSize: 14),
                   ),
                 ],
               ),
@@ -562,26 +676,33 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
           children: [
             // Table header
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
                 color: theme.colorScheme.primary.withOpacity(0.08),
                 borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16)),
+                  top: Radius.circular(16),
+                ),
               ),
               child: Row(
                 children: [
                   Expanded(
-                      child: Text('Category',
-                          style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              color: theme.colorScheme.primary))),
-                  Text('Round 1 Score (2025)',
+                    child: Text(
+                      'Category',
                       style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: theme.colorScheme.primary)),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'Round 1 Score (2025)',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -592,20 +713,22 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
               final score = data[cat]!;
               return Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 14),
+                  horizontal: 20,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   border: isLast
                       ? null
-                      : Border(
-                          bottom:
-                              BorderSide(color: theme.dividerColor)),
+                      : Border(bottom: BorderSide(color: theme.dividerColor)),
                 ),
                 child: Row(
                   children: [
                     // Category chip
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: _categoryColor(cat).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -645,7 +768,9 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
             child: Text(
               'Source: DU CSAS 2025 Official Round 1 Allotment Data',
               style: GoogleFonts.outfit(
-                  fontSize: 11, color: Colors.grey.shade500),
+                fontSize: 11,
+                color: Colors.grey.shade500,
+              ),
             ),
           ),
         ],
@@ -655,13 +780,20 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
 
   Color _categoryColor(String cat) {
     switch (cat) {
-      case 'UR':   return Colors.blue;
-      case 'OBC':  return Colors.orange;
-      case 'SC':   return Colors.purple;
-      case 'ST':   return Colors.teal;
-      case 'EWS':  return Colors.green;
-      case 'PwBD': return Colors.red;
-      default:     return Colors.grey;
+      case 'UR':
+        return Colors.blue;
+      case 'OBC':
+        return Colors.orange;
+      case 'SC':
+        return Colors.purple;
+      case 'ST':
+        return Colors.teal;
+      case 'EWS':
+        return Colors.green;
+      case 'PwBD':
+        return Colors.red;
+      default:
+        return Colors.grey;
     }
   }
 
@@ -675,11 +807,23 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey)),
-            Text(sub, style: GoogleFonts.outfit(fontSize: 11, color: Colors.grey.shade500)),
+            Text(
+              label,
+              style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey),
+            ),
+            Text(
+              sub,
+              style: GoogleFonts.outfit(
+                fontSize: 11,
+                color: Colors.grey.shade500,
+              ),
+            ),
           ],
         ),
-        Text(value, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }
@@ -693,7 +837,9 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: theme.brightness == Brightness.light ? Colors.grey.shade50 : theme.cardColor,
+            color: theme.brightness == Brightness.light
+                ? Colors.grey.shade50
+                : theme.cardColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: theme.dividerColor),
           ),
@@ -702,10 +848,17 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(LucideIcons.map, size: 18, color: Colors.redAccent),
+                  const Icon(
+                    LucideIcons.map,
+                    size: 18,
+                    color: Colors.redAccent,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(college.address, style: GoogleFonts.outfit(fontSize: 14)),
+                    child: Text(
+                      college.address,
+                      style: GoogleFonts.outfit(fontSize: 14),
+                    ),
                   ),
                 ],
               ),
@@ -715,10 +868,17 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
               ),
               Row(
                 children: [
-                  const Icon(LucideIcons.train, size: 18, color: Colors.blueAccent),
+                  const Icon(
+                    LucideIcons.train,
+                    size: 18,
+                    color: Colors.blueAccent,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(college.nearbyMetro, style: GoogleFonts.outfit(fontSize: 14)),
+                    child: Text(
+                      college.nearbyMetro,
+                      style: GoogleFonts.outfit(fontSize: 14),
+                    ),
                   ),
                 ],
               ),
@@ -757,7 +917,10 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
               ),
               child: Text(
                 college.facilities[index],
-                style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w500),
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             );
           },
@@ -780,11 +943,18 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [theme.colorScheme.primary, theme.colorScheme.primary.withOpacity(0.8)],
+              colors: [
+                theme.colorScheme.primary,
+                theme.colorScheme.primary.withOpacity(0.8),
+              ],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
-              BoxShadow(color: theme.colorScheme.primary.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4)),
+              BoxShadow(
+                color: theme.colorScheme.primary.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
           child: Column(
@@ -793,24 +963,49 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Hostel Fee', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 14)),
-                  Text(hostel.fee, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                    'Hostel Fee',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    hostel.fee,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
-              Text(hostel.details, style: GoogleFonts.outfit(color: Colors.white, fontSize: 14)),
+              Text(
+                hostel.details,
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+              ),
               const SizedBox(height: 16),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: hostel.facilities.map((f) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Text(f, style: GoogleFonts.outfit(color: Colors.white, fontSize: 10)),
+                    child: Text(
+                      f,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                    ),
                   );
                 }).toList(),
               ),
@@ -833,9 +1028,15 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
             LineChartData(
               gridData: const FlGridData(show: false),
               titlesData: const FlTitlesData(
-                leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                topTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                rightTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
               ),
               borderData: FlBorderData(show: false),
               lineBarsData: [
@@ -871,7 +1072,12 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
     );
   }
 
-  Widget _buildBottomBar(BuildContext context, ThemeData theme, WishlistProvider wishlistProvider, CompareProvider compareProvider) {
+  Widget _buildBottomBar(
+    BuildContext context,
+    ThemeData theme,
+    WishlistProvider wishlistProvider,
+    CompareProvider compareProvider,
+  ) {
     final isInCompare = compareProvider.isInCompare(college.id);
     final compareCount = compareProvider.count;
 
@@ -880,7 +1086,11 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
         ],
       ),
       child: Row(
@@ -890,17 +1100,23 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
               onPressed: () {
                 if (compareCount >= 2 && !isInCompare) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('You can only compare 2 colleges at a time.'))
+                    const SnackBar(
+                      content: Text(
+                        'You can only compare 2 colleges at a time.',
+                      ),
+                    ),
                   );
                   return;
                 }
-                
+
                 compareProvider.toggleCompare(college);
-                
+
                 if (compareProvider.count == 2) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('2 colleges selected for comparison!'),
+                      content: const Text(
+                        '2 colleges selected for comparison!',
+                      ),
                       action: SnackBarAction(
                         label: 'COMPARE NOW',
                         onPressed: () {
@@ -919,23 +1135,35 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                   );
                 } else if (compareProvider.count == 1) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Select one more college to compare.'))
+                    const SnackBar(
+                      content: Text('Select one more college to compare.'),
+                    ),
                   );
                 }
               },
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                side: BorderSide(color: isInCompare ? Colors.orange : theme.colorScheme.primary),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                backgroundColor: isInCompare ? Colors.orange.withOpacity(0.1) : null,
+                side: BorderSide(
+                  color: isInCompare
+                      ? Colors.orange
+                      : theme.colorScheme.primary,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                backgroundColor: isInCompare
+                    ? Colors.orange.withOpacity(0.1)
+                    : null,
               ),
               child: Text(
-                isInCompare ? 'Selected (${compareCount}/2)' : 'Compare', 
+                isInCompare ? 'Selected (${compareCount}/2)' : 'Compare',
                 style: GoogleFonts.outfit(
-                  fontSize: 15, 
-                  fontWeight: FontWeight.bold, 
-                  color: isInCompare ? Colors.orange : theme.colorScheme.primary
-                )
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: isInCompare
+                      ? Colors.orange
+                      : theme.colorScheme.primary,
+                ),
               ),
             ),
           ),
@@ -945,13 +1173,13 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
               onPressed: () {
                 final wasInWishlist = wishlistProvider.isInWishlist(college.id);
                 wishlistProvider.toggleWishlist(college);
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      wasInWishlist 
-                          ? '${college.name} removed from list' 
-                          : '${college.name} added to list'
+                      wasInWishlist
+                          ? '${college.name} removed from list'
+                          : '${college.name} added to list',
                     ),
                     duration: const Duration(seconds: 2),
                     behavior: SnackBarBehavior.floating,
@@ -959,26 +1187,35 @@ class _CollegeDetailsScreenState extends State<CollegeDetailsScreen> {
                 );
               },
               icon: Icon(
-                wishlistProvider.isInWishlist(college.id) ? LucideIcons.check : LucideIcons.plus,
+                wishlistProvider.isInWishlist(college.id)
+                    ? LucideIcons.check
+                    : LucideIcons.plus,
                 size: 18,
               ),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                backgroundColor: wishlistProvider.isInWishlist(college.id) 
-                    ? Colors.green.shade50 
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                backgroundColor: wishlistProvider.isInWishlist(college.id)
+                    ? Colors.green.shade50
                     : theme.colorScheme.primary,
-                foregroundColor: wishlistProvider.isInWishlist(college.id) 
-                    ? Colors.green.shade700 
+                foregroundColor: wishlistProvider.isInWishlist(college.id)
+                    ? Colors.green.shade700
                     : Colors.white,
                 elevation: 0,
-                side: wishlistProvider.isInWishlist(college.id) 
-                    ? BorderSide(color: Colors.green.shade200) 
+                side: wishlistProvider.isInWishlist(college.id)
+                    ? BorderSide(color: Colors.green.shade200)
                     : null,
               ),
               label: Text(
-                wishlistProvider.isInWishlist(college.id) ? 'Added to List' : 'Add to List',
-                style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold),
+                wishlistProvider.isInWishlist(college.id)
+                    ? 'Added to List'
+                    : 'Add to List',
+                style: GoogleFonts.outfit(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),

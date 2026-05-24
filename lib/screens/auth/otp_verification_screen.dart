@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../providers/auth_service.dart';
@@ -22,7 +22,10 @@ class OtpVerificationScreen extends StatefulWidget {
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
-  final List<TextEditingController> _controllers = List.generate(6, (index) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    6,
+    (index) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
   bool _isLoading = false;
 
@@ -59,7 +62,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       if (mounted) {
         if (widget.type == OtpType.signup) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account verified successfully!'), backgroundColor: Colors.green),
+            const SnackBar(
+              content: Text('Account verified successfully!'),
+              backgroundColor: Colors.green,
+            ),
           );
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const MainScreen()),
@@ -67,14 +73,19 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           );
         } else if (widget.type == OtpType.recovery) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const ResetPasswordScreen()),
+            MaterialPageRoute(
+              builder: (context) => const ResetPasswordScreen(),
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Verification failed: ${e.toString()}'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Verification failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -90,7 +101,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(LucideIcons.chevronLeft, color: theme.textTheme.bodyLarge?.color),
+          icon: Icon(
+            LucideIcons.chevronLeft,
+            color: theme.textTheme.bodyLarge?.color,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -100,7 +114,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 40),
-            Icon(LucideIcons.shieldCheck, size: 80, color: theme.colorScheme.primary),
+            Icon(
+              LucideIcons.shieldCheck,
+              size: 80,
+              color: theme.colorScheme.primary,
+            ),
             const SizedBox(height: 24),
             Text(
               'Verify Email',
@@ -135,7 +153,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     maxLength: 1,
-                    style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                     decoration: InputDecoration(
                       counterText: '',
                       enabledBorder: OutlineInputBorder(
@@ -144,7 +165,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                          width: 2,
+                        ),
                       ),
                     ),
                     onChanged: (value) {
@@ -168,17 +192,26 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               child: _isLoading
                   ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
                     )
                   : Text(
                       'Verify & Continue',
-                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
             ),
             const SizedBox(height: 24),

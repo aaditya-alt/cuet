@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -65,14 +65,18 @@ class _DuCollegeDetailScreenState extends State<DuCollegeDetailScreen>
     final programs = c.programs.isNotEmpty
         ? c.programs
               .take(3)
-              .map((p) =>
-                  '• ${p.programName} — Cutoff: ${p.cutoffScore.toInt()} (${p.chance})')
+              .map(
+                (p) =>
+                    '• ${p.programName} — Cutoff: ${p.cutoffScore.toInt()} (${p.chance})',
+              )
               .join('\n')
         : 'Multiple programs available';
 
-    final shareUrl = 'https://cuet.collegemitra.net.in/college?name=${Uri.encodeComponent(c.collegeName)}';
+    final shareUrl =
+        'https://cuet.collegemitra.net.in/college?name=${Uri.encodeComponent(c.collegeName)}';
 
-    final text = '''
+    final text =
+        '''
 🎓 ${c.collegeName}
 📍 ${c.campusType ?? 'Delhi University'} | Est. ${c.established ?? 'N/A'}
 ${c.naacGrade != null ? '🏆 NAAC ${c.naacGrade}' : ''}${c.nirfRanking != null ? ' | NIRF #${c.nirfRanking}' : ''}
@@ -85,9 +89,13 @@ $shareUrl
 
 ✨ Predict your dream DU college with 99% accuracy!
 Download DU Cutoff Predictor 2025 — completely FREE!
-https://cuet.collegemitra.net.in'''.trim();
+https://cuet.collegemitra.net.in'''
+            .trim();
 
-    await Share.share(text, subject: 'Check out ${c.collegeName} on DU Predictor!');
+    await Share.share(
+      text,
+      subject: 'Check out ${c.collegeName} on DU Predictor!',
+    );
   }
 
   Future<void> _fetchAdditionalData() async {
@@ -146,7 +154,9 @@ https://cuet.collegemitra.net.in'''.trim();
             actions: [
               Consumer<DuWishlistProvider>(
                 builder: (ctx, wishlist, _) {
-                  final saved = wishlist.isWishlisted(widget.college.collegeName);
+                  final saved = wishlist.isWishlisted(
+                    widget.college.collegeName,
+                  );
                   return Padding(
                     padding: const EdgeInsets.only(right: 4),
                     child: ClipRRect(
@@ -164,9 +174,11 @@ https://cuet.collegemitra.net.in'''.trim();
                               wishlist.toggle(widget.college);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(saved
-                                      ? 'Removed from wishlist'
-                                      : 'Saved to wishlist ❤️'),
+                                  content: Text(
+                                    saved
+                                        ? 'Removed from wishlist'
+                                        : 'Saved to wishlist ❤️',
+                                  ),
                                   behavior: SnackBarBehavior.floating,
                                   duration: const Duration(seconds: 2),
                                 ),
@@ -184,7 +196,9 @@ https://cuet.collegemitra.net.in'''.trim();
                   CollegeModel? resolvedModel;
                   try {
                     resolvedModel = MockData.colleges.firstWhere(
-                      (c) => c.name.toLowerCase() == widget.college.collegeName.toLowerCase(),
+                      (c) =>
+                          c.name.toLowerCase() ==
+                          widget.college.collegeName.toLowerCase(),
                     );
                   } catch (_) {}
 
@@ -192,7 +206,9 @@ https://cuet.collegemitra.net.in'''.trim();
 
                   return Consumer<CompareProvider>(
                     builder: (ctx, compareProvider, _) {
-                      final inCompare = compareProvider.isInCompare(resolvedModel!.id);
+                      final inCompare = compareProvider.isInCompare(
+                        resolvedModel!.id,
+                      );
                       return Padding(
                         padding: const EdgeInsets.only(right: 4),
                         child: ClipRRect(
@@ -204,21 +220,35 @@ https://cuet.collegemitra.net.in'''.trim();
                               child: IconButton(
                                 icon: Icon(
                                   LucideIcons.gitCompare,
-                                  color: inCompare ? Colors.greenAccent : Colors.white,
+                                  color: inCompare
+                                      ? Colors.greenAccent
+                                      : Colors.white,
                                 ),
                                 onPressed: () {
-                                  final added = compareProvider.toggleCompare(resolvedModel!);
-                                  if (!added && !compareProvider.isInCompare(resolvedModel!.id) && compareProvider.count >= 2) {
+                                  final added = compareProvider.toggleCompare(
+                                    resolvedModel!,
+                                  );
+                                  if (!added &&
+                                      !compareProvider.isInCompare(
+                                        resolvedModel!.id,
+                                      ) &&
+                                      compareProvider.count >= 2) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text('Comparison list is full! Max 2 colleges can be compared.'),
+                                        content: Text(
+                                          'Comparison list is full! Max 2 colleges can be compared.',
+                                        ),
                                         behavior: SnackBarBehavior.floating,
                                       ),
                                     );
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(added ? 'Added to compare list 📋' : 'Removed from compare list'),
+                                        content: Text(
+                                          added
+                                              ? 'Added to compare list 📋'
+                                              : 'Removed from compare list',
+                                        ),
                                         behavior: SnackBarBehavior.floating,
                                         duration: const Duration(seconds: 2),
                                       ),
@@ -232,7 +262,7 @@ https://cuet.collegemitra.net.in'''.trim();
                       );
                     },
                   );
-                }
+                },
               ),
               Padding(
                 padding: const EdgeInsets.only(right: 8),
@@ -243,7 +273,10 @@ https://cuet.collegemitra.net.in'''.trim();
                     child: Container(
                       color: Colors.black.withOpacity(0.3),
                       child: IconButton(
-                        icon: const Icon(LucideIcons.share2, color: Colors.white),
+                        icon: const Icon(
+                          LucideIcons.share2,
+                          color: Colors.white,
+                        ),
                         onPressed: _shareCollege,
                       ),
                     ),

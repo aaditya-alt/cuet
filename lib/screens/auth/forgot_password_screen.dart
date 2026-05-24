@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -34,7 +34,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         await authService.resetPassword(_emailController.text.trim());
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('OTP sent to your email!'), backgroundColor: Colors.green),
+            const SnackBar(
+              content: Text('OTP sent to your email!'),
+              backgroundColor: Colors.green,
+            ),
           );
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -69,7 +72,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(LucideIcons.chevronLeft, color: theme.textTheme.bodyLarge?.color),
+          icon: Icon(
+            LucideIcons.chevronLeft,
+            color: theme.textTheme.bodyLarge?.color,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -134,7 +140,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -154,11 +163,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ? const SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
                   )
                 : Text(
                     'Send Reset Link',
-                    style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: GoogleFonts.outfit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
           ),
         ],
@@ -178,7 +194,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             color: Colors.green.shade50,
             shape: BoxShape.circle,
           ),
-          child: Icon(LucideIcons.checkCircle2, size: 100, color: Colors.green.shade600),
+          child: Icon(
+            LucideIcons.checkCircle2,
+            size: 100,
+            color: Colors.green.shade600,
+          ),
         ),
         const SizedBox(height: 32),
         Text(
@@ -212,7 +232,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           child: Text(
             'Back to Login',
-            style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+            style: GoogleFonts.outfit(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ),
       ],

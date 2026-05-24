@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_service.dart';
 import '../../providers/du_community_service.dart';
@@ -56,7 +56,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   // Client-side moderation check
   bool _containsProfanity(String text) {
     final lower = text.toLowerCase();
-    final List<String> flaggedWords = ['abuse', 'scam', 'fake', 'spam', 'fraud', 'cheat', 'crap'];
+    final List<String> flaggedWords = [
+      'abuse',
+      'scam',
+      'fake',
+      'spam',
+      'fraud',
+      'cheat',
+      'crap',
+    ];
     return flaggedWords.any((word) => lower.contains(word));
   }
 
@@ -68,7 +76,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           title: Row(
             children: const [
               Icon(LucideIcons.shieldAlert, color: Colors.orange, size: 28),
@@ -83,7 +93,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: const Text('Understand'),
             ),
@@ -94,7 +106,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     }
 
     final authService = Provider.of<AuthService>(context, listen: false);
-    final communityService = Provider.of<DuCommunityService>(context, listen: false);
+    final communityService = Provider.of<DuCommunityService>(
+      context,
+      listen: false,
+    );
 
     final user = authService.currentUser;
     final userName = user?.userMetadata?['full_name'] ?? 'Student';
@@ -125,14 +140,19 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final messages = communityService.channelMessages[widget.channelId] ?? [];
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : const Color(0xFFF8F9FF),
+      backgroundColor: isDark
+          ? const Color(0xFF0A0E14)
+          : const Color(0xFFF8F9FF),
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               widget.channelTitle,
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
             Text(
               'Realtime Admissions Board',
@@ -143,7 +163,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.refreshCw, size: 18),
-            onPressed: () => communityService.fetchMessages(widget.channelId).then((_) => _scrollToBottom()),
+            onPressed: () => communityService
+                .fetchMessages(widget.channelId)
+                .then((_) => _scrollToBottom()),
           ),
         ],
       ),
@@ -160,7 +182,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 const SizedBox(width: 8),
                 Text(
                   'Connected to Realtime Network Gateway',
-                  style: GoogleFonts.inter(fontSize: 11, color: Colors.green, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -177,7 +203,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     itemBuilder: (context, index) {
                       final msg = messages[index];
                       final isMe = msg.userEmail == currentUserEmail;
-                      
+
                       return _buildMessageBubble(msg, isMe, theme, isDark);
                     },
                   ),
@@ -190,14 +216,23 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     );
   }
 
-  Widget _buildMessageBubble(CommunityMessage msg, bool isMe, ThemeData theme, bool isDark) {
+  Widget _buildMessageBubble(
+    CommunityMessage msg,
+    bool isMe,
+    ThemeData theme,
+    bool isDark,
+  ) {
     final avatarColor = _getAvatarColor(msg.userName);
-    final initials = msg.userName.isNotEmpty ? msg.userName.trim().substring(0, 1).toUpperCase() : '?';
+    final initials = msg.userName.isNotEmpty
+        ? msg.userName.trim().substring(0, 1).toUpperCase()
+        : '?';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isMe) ...[
@@ -206,15 +241,21 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               backgroundColor: avatarColor,
               child: Text(
                 initials,
-                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
             const SizedBox(width: 10),
           ],
-          
+
           Flexible(
             child: Column(
-              crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isMe
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 // Username label
                 if (!isMe)
@@ -229,16 +270,19 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       ),
                     ),
                   ),
-                
+
                 // Bubble container
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: isMe
                         ? theme.colorScheme.primary
                         : isDark
-                            ? const Color(0xFF161C24)
-                            : Colors.white,
+                        ? const Color(0xFF161C24)
+                        : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(20),
                       topRight: const Radius.circular(20),
@@ -257,15 +301,20 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     msg.message,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: isMe ? Colors.white : theme.textTheme.bodyLarge?.color,
+                      color: isMe
+                          ? Colors.white
+                          : theme.textTheme.bodyLarge?.color,
                       height: 1.4,
                     ),
                   ),
                 ),
-                
+
                 // Timestamp
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 4,
+                  ),
                   child: Text(
                     _formatTime(msg.createdAt),
                     style: GoogleFonts.inter(fontSize: 10, color: Colors.grey),
@@ -337,7 +386,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
                     )
                   : const Icon(LucideIcons.send, color: Colors.white, size: 20),
             ),
@@ -361,7 +413,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   String _formatTime(DateTime dt) {
-    final hour = dt.hour > 12 ? dt.hour - 12 : dt.hour == 0 ? 12 : dt.hour;
+    final hour = dt.hour > 12
+        ? dt.hour - 12
+        : dt.hour == 0
+        ? 12
+        : dt.hour;
     final min = dt.minute.toString().padLeft(2, '0');
     final ampm = dt.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$min $ampm';

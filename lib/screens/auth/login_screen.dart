@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/auth_service.dart';
@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
-        
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('guest_mode', false);
 
@@ -72,7 +72,10 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(LucideIcons.chevronLeft, color: theme.textTheme.bodyLarge?.color),
+          icon: Icon(
+            LucideIcons.chevronLeft,
+            color: theme.textTheme.bodyLarge?.color,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -97,7 +100,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         offset: const Offset(0, 10),
                       ),
                     ],
-                    border: Border.all(color: theme.colorScheme.primary.withOpacity(0.1), width: 1),
+                    border: Border.all(
+                      color: theme.colorScheme.primary.withOpacity(0.1),
+                      width: 1,
+                    ),
                   ),
                   child: ClipOval(
                     child: Image.asset(
@@ -106,7 +112,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 80,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return Icon(LucideIcons.graduationCap, size: 60, color: theme.colorScheme.primary);
+                        return Icon(
+                          LucideIcons.graduationCap,
+                          size: 60,
+                          color: theme.colorScheme.primary,
+                        );
                       },
                     ),
                   ),
@@ -156,10 +166,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 icon: LucideIcons.lock,
                 isPassword: true,
                 obscureText: !_isPasswordVisible,
-                onTogglePassword: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                validator: (value) => value!.isEmpty ? 'Password is required' : null,
+                onTogglePassword: () =>
+                    setState(() => _isPasswordVisible = !_isPasswordVisible),
+                validator: (value) =>
+                    value!.isEmpty ? 'Password is required' : null,
               ),
-              
+
               // Forgot Password
               Align(
                 alignment: Alignment.centerRight,
@@ -167,7 +179,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const ForgotPasswordScreen(),
+                      ),
                     );
                   },
                   child: Text(
@@ -195,11 +209,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
                       )
                     : Text(
                         'Sign In',
-                        style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
               ),
               const SizedBox(height: 32),
@@ -210,18 +231,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Text(
                     "Don't have an account? ",
-                    style: GoogleFonts.outfit(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
+                    style: GoogleFonts.outfit(
+                      color: theme.textTheme.bodyMedium?.color?.withOpacity(
+                        0.6,
+                      ),
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const SignUpScreen(),
+                        ),
                       );
                     },
                     child: Text(
                       'Create Account',
-                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
                   ),
                 ],
@@ -257,13 +287,14 @@ class _LoginScreenState extends State<LoginScreen> {
         prefixIcon: Icon(icon, size: 20),
         suffixIcon: isPassword
             ? IconButton(
-                icon: Icon(obscureText ? LucideIcons.eyeOff : LucideIcons.eye, size: 20),
+                icon: Icon(
+                  obscureText ? LucideIcons.eyeOff : LucideIcons.eye,
+                  size: 20,
+                ),
                 onPressed: onTogglePassword,
               )
             : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: theme.dividerColor),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_service.dart';
 import '../main_screen.dart';
@@ -32,7 +32,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       try {
         final authService = Provider.of<AuthService>(context, listen: false);
         await authService.updatePassword(_passwordController.text);
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Password updated successfully!')),
@@ -68,7 +68,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             children: [
               Text(
                 'Set New Password',
-                style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold),
+                style: GoogleFonts.outfit(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -83,12 +86,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   labelText: 'New Password',
                   prefixIcon: const Icon(LucideIcons.lock),
                   suffixIcon: IconButton(
-                    icon: Icon(_isPasswordVisible ? LucideIcons.eyeOff : LucideIcons.eye),
-                    onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                    icon: Icon(
+                      _isPasswordVisible ? LucideIcons.eyeOff : LucideIcons.eye,
+                    ),
+                    onPressed: () => setState(
+                      () => _isPasswordVisible = !_isPasswordVisible,
+                    ),
                   ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                validator: (value) => value!.length < 6 ? 'Password too short' : null,
+                validator: (value) =>
+                    value!.length < 6 ? 'Password too short' : null,
               ),
               const SizedBox(height: 20),
               TextFormField(
@@ -97,16 +107,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 decoration: InputDecoration(
                   labelText: 'Confirm Password',
                   prefixIcon: const Icon(LucideIcons.shieldCheck),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                validator: (value) => value != _passwordController.text ? 'Passwords do not match' : null,
+                validator: (value) => value != _passwordController.text
+                    ? 'Passwords do not match'
+                    : null,
               ),
               const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: _isLoading ? null : _handleUpdate,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator()

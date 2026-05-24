@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../models/college_model.dart';
 import '../../providers/compare_provider.dart';
@@ -23,8 +23,11 @@ class _CompareScreenState extends State<CompareScreen> {
   @override
   void initState() {
     super.initState();
-    final compareProvider = Provider.of<CompareProvider>(context, listen: false);
-    
+    final compareProvider = Provider.of<CompareProvider>(
+      context,
+      listen: false,
+    );
+
     // Initialize colleges: use widget constructor first, fallback to provider list
     _college1 = widget.college1;
     _college2 = widget.college2;
@@ -53,7 +56,10 @@ class _CompareScreenState extends State<CompareScreen> {
             }
           });
           // Sync back to CompareProvider if appropriate
-          final compareProvider = Provider.of<CompareProvider>(context, listen: false);
+          final compareProvider = Provider.of<CompareProvider>(
+            context,
+            listen: false,
+          );
           compareProvider.clearCompare();
           if (_college1 != null) compareProvider.toggleCompare(_college1!);
           if (_college2 != null) compareProvider.toggleCompare(_college2!);
@@ -68,7 +74,9 @@ class _CompareScreenState extends State<CompareScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : const Color(0xFFF4F6FF),
+      backgroundColor: isDark
+          ? const Color(0xFF0A0E14)
+          : const Color(0xFFF4F6FF),
       appBar: AppBar(
         title: Text(
           'Compare Colleges',
@@ -83,7 +91,10 @@ class _CompareScreenState extends State<CompareScreen> {
                 _college1 = null;
                 _college2 = null;
               });
-              Provider.of<CompareProvider>(context, listen: false).clearCompare();
+              Provider.of<CompareProvider>(
+                context,
+                listen: false,
+              ).clearCompare();
             },
           ),
         ],
@@ -96,9 +107,14 @@ class _CompareScreenState extends State<CompareScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: _buildSelectorSlot(1, _college1, theme, isDark)),
+                Expanded(
+                  child: _buildSelectorSlot(1, _college1, theme, isDark),
+                ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 30),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 30,
+                  ),
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -115,7 +131,9 @@ class _CompareScreenState extends State<CompareScreen> {
                     ),
                   ),
                 ),
-                Expanded(child: _buildSelectorSlot(2, _college2, theme, isDark)),
+                Expanded(
+                  child: _buildSelectorSlot(2, _college2, theme, isDark),
+                ),
               ],
             ),
             const SizedBox(height: 32),
@@ -123,35 +141,55 @@ class _CompareScreenState extends State<CompareScreen> {
             // Comparison Results Table
             if (_college1 != null && _college2 != null) ...[
               _buildComparisonSection(theme, 'General Info', [
-                _buildComparisonRow('Campus', _college1!.campus, _college2!.campus),
+                _buildComparisonRow(
+                  'Campus',
+                  _college1!.campus,
+                  _college2!.campus,
+                ),
                 _buildComparisonRow('Type', _college1!.type, _college2!.type),
-                _buildComparisonRow('NIRF 2025', '#${_college1!.nirfRanking}', '#${_college2!.nirfRanking}'),
+                _buildComparisonRow(
+                  'NIRF 2025',
+                  '#${_college1!.nirfRanking}',
+                  '#${_college2!.nirfRanking}',
+                ),
               ]),
               const SizedBox(height: 24),
               _buildComparisonSection(theme, 'Placements', [
                 _buildComparisonRow(
-                  'Highest Package', 
-                  _college1!.placementInfo?.highestPackage ?? 'N/A', 
+                  'Highest Package',
+                  _college1!.placementInfo?.highestPackage ?? 'N/A',
                   _college2!.placementInfo?.highestPackage ?? 'N/A',
                   highlightHigher: true,
                 ),
                 _buildComparisonRow(
-                  'Average Package', 
-                  _college1!.placementInfo?.averagePackage ?? 'N/A', 
+                  'Average Package',
+                  _college1!.placementInfo?.averagePackage ?? 'N/A',
                   _college2!.placementInfo?.averagePackage ?? 'N/A',
                   highlightHigher: true,
                 ),
                 _buildComparisonRow(
-                  'Placement %', 
-                  _college1!.placementInfo?.placementPercentage != null ? '${_college1!.placementInfo!.placementPercentage}%' : 'N/A', 
-                  _college2!.placementInfo?.placementPercentage != null ? '${_college2!.placementInfo!.placementPercentage}%' : 'N/A',
+                  'Placement %',
+                  _college1!.placementInfo?.placementPercentage != null
+                      ? '${_college1!.placementInfo!.placementPercentage}%'
+                      : 'N/A',
+                  _college2!.placementInfo?.placementPercentage != null
+                      ? '${_college2!.placementInfo!.placementPercentage}%'
+                      : 'N/A',
                   highlightHigher: true,
                 ),
               ]),
               const SizedBox(height: 24),
               _buildComparisonSection(theme, 'Facilities', [
-                _buildComparisonRow('Hostel Fee', _college1!.hostelInfo?.fee ?? 'N/A', _college2!.hostelInfo?.fee ?? 'N/A'),
-                _buildComparisonRow('Metro Connectivity', _college1!.nearbyMetro.split(',').first, _college2!.nearbyMetro.split(',').first),
+                _buildComparisonRow(
+                  'Hostel Fee',
+                  _college1!.hostelInfo?.fee ?? 'N/A',
+                  _college2!.hostelInfo?.fee ?? 'N/A',
+                ),
+                _buildComparisonRow(
+                  'Metro Connectivity',
+                  _college1!.nearbyMetro.split(',').first,
+                  _college2!.nearbyMetro.split(',').first,
+                ),
               ]),
               const SizedBox(height: 40),
             ] else
@@ -185,14 +223,19 @@ class _CompareScreenState extends State<CompareScreen> {
                     ],
                   ),
                 ),
-              )
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSelectorSlot(int slot, CollegeModel? college, ThemeData theme, bool isDark) {
+  Widget _buildSelectorSlot(
+    int slot,
+    CollegeModel? college,
+    ThemeData theme,
+    bool isDark,
+  ) {
     if (college == null) {
       return Container(
         height: 150,
@@ -245,8 +288,8 @@ class _CompareScreenState extends State<CompareScreen> {
             color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
-        ]
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -287,7 +330,10 @@ class _CompareScreenState extends State<CompareScreen> {
             icon: const Icon(LucideIcons.edit2, size: 12),
             label: Text(
               'Change',
-              style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -300,7 +346,11 @@ class _CompareScreenState extends State<CompareScreen> {
     );
   }
 
-  Widget _buildComparisonSection(ThemeData theme, String title, List<Widget> rows) {
+  Widget _buildComparisonSection(
+    ThemeData theme,
+    String title,
+    List<Widget> rows,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -321,20 +371,18 @@ class _CompareScreenState extends State<CompareScreen> {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: theme.dividerColor),
           ),
-          child: Column(
-            children: rows,
-          ),
+          child: Column(children: rows),
         ),
       ],
     );
   }
 
   Widget _buildComparisonRow(
-    String label, 
-    String val1, 
-    String val2, 
-    {bool highlightHigher = false}
-  ) {
+    String label,
+    String val1,
+    String val2, {
+    bool highlightHigher = false,
+  }) {
     bool isHigher1 = false;
     bool isHigher2 = false;
 
@@ -354,7 +402,10 @@ class _CompareScreenState extends State<CompareScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Text(label, style: GoogleFonts.outfit(color: Colors.grey, fontSize: 12)),
+          Text(
+            label,
+            style: GoogleFonts.outfit(color: Colors.grey, fontSize: 12),
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -363,7 +414,7 @@ class _CompareScreenState extends State<CompareScreen> {
                   val1,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.outfit(
-                    fontSize: 15, 
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: isHigher1 ? Colors.green : null,
                   ),
@@ -375,7 +426,7 @@ class _CompareScreenState extends State<CompareScreen> {
                   val2,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.outfit(
-                    fontSize: 15, 
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: isHigher2 ? Colors.green : null,
                   ),
@@ -422,7 +473,8 @@ class _CollegeSearchSheetState extends State<_CollegeSearchSheet> {
     setState(() {
       _filteredColleges = MockData.colleges.where((c) {
         if (c.id == widget.excludeId) return false;
-        final matchSearch = _searchQuery.isEmpty || 
+        final matchSearch =
+            _searchQuery.isEmpty ||
             c.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
             c.campus.toLowerCase().contains(_searchQuery.toLowerCase());
         return matchSearch;
@@ -473,7 +525,9 @@ class _CollegeSearchSheetState extends State<_CollegeSearchSheet> {
               hintText: 'Search college name or campus...',
               prefixIcon: const Icon(LucideIcons.search, size: 18),
               filled: true,
-              fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade100,
+              fillColor: isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.grey.shade100,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide.none,
@@ -495,7 +549,10 @@ class _CollegeSearchSheetState extends State<_CollegeSearchSheet> {
                     itemBuilder: (context, index) {
                       final college = _filteredColleges[index];
                       return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 4,
+                          horizontal: 8,
+                        ),
                         leading: Container(
                           height: 44,
                           width: 44,
@@ -524,7 +581,10 @@ class _CollegeSearchSheetState extends State<_CollegeSearchSheet> {
                         ),
                         subtitle: Text(
                           '${college.campus} • NIRF #${college.nirfRanking}',
-                          style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                         ),
                         onTap: () {
                           widget.onSelected(college);

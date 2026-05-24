@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../models/college_model.dart';
 import 'package:provider/provider.dart';
 import '../../providers/wishlist_provider.dart';
@@ -91,7 +91,9 @@ class _WishlistTabState extends State<WishlistTab>
             ),
             IconButton(
               onPressed: () {
-                final names = wishlist.map((c) => Uri.encodeComponent(c.name)).join(',');
+                final names = wishlist
+                    .map((c) => Uri.encodeComponent(c.name))
+                    .join(',');
                 final shareUrl =
                     'https://cuet.collegemitra.net.in/wishlist?names=$names';
                 String text =
@@ -151,7 +153,9 @@ class _WishlistTabState extends State<WishlistTab>
             IconButton(
               onPressed: () {
                 final items = duWishlist.items;
-                final names = items.map((i) => Uri.encodeComponent(i.collegeName)).join(',');
+                final names = items
+                    .map((i) => Uri.encodeComponent(i.collegeName))
+                    .join(',');
                 final shareUrl =
                     'https://cuet.collegemitra.net.in/wishlist?names=$names';
                 String text =

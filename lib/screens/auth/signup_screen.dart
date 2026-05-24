@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -42,12 +42,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _handleSignUp() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedCourse == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a course')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Please select a course')));
         return;
       }
-      
+
       setState(() => _isLoading = true);
       try {
         final authService = Provider.of<AuthService>(context, listen: false);
@@ -121,7 +121,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
               color: theme.scaffoldBackgroundColor.withOpacity(0.8),
               shape: BoxShape.circle,
             ),
-            child: Icon(LucideIcons.chevronLeft, size: 20, color: theme.colorScheme.primary),
+            child: Icon(
+              LucideIcons.chevronLeft,
+              size: 20,
+              color: theme.colorScheme.primary,
+            ),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -165,7 +169,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         width: 80,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
-                          return Icon(LucideIcons.graduationCap, size: 50, color: theme.colorScheme.primary);
+                          return Icon(
+                            LucideIcons.graduationCap,
+                            size: 50,
+                            color: theme.colorScheme.primary,
+                          );
                         },
                       ),
                     ),
@@ -184,7 +192,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     'Create an account to start predicting',
                     style: GoogleFonts.outfit(
                       fontSize: 16,
-                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                      color: theme.textTheme.bodyMedium?.color?.withOpacity(
+                        0.6,
+                      ),
                     ),
                   ),
                 ],
@@ -204,7 +214,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       label: 'Full Name',
                       hint: 'John Doe',
                       icon: LucideIcons.user,
-                      validator: (value) => value!.isEmpty ? 'Name is required' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Name is required' : null,
                     ),
                     const SizedBox(height: 20),
                     _buildTextField(
@@ -226,7 +237,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       hint: '+91 98765 43210',
                       icon: LucideIcons.phone,
                       keyboardType: TextInputType.phone,
-                      validator: (value) => value!.isEmpty ? 'Phone number is required' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Phone number is required' : null,
                     ),
                     const SizedBox(height: 20),
                     DropdownButtonFormField<String>(
@@ -246,15 +258,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(color: theme.colorScheme.primary, width: 1.5),
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.primary,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                       hint: const Text('Select your course'),
                       items: AppConstants.duCourses.map((course) {
-                        return DropdownMenuItem(value: course, child: Text(course));
+                        return DropdownMenuItem(
+                          value: course,
+                          child: Text(course),
+                        );
                       }).toList(),
-                      onChanged: (value) => setState(() => _selectedCourse = value),
-                      validator: (value) => value == null ? 'Please select a course' : null,
+                      onChanged: (value) =>
+                          setState(() => _selectedCourse = value),
+                      validator: (value) =>
+                          value == null ? 'Please select a course' : null,
                     ),
                     const SizedBox(height: 20),
                     _buildTextField(
@@ -264,8 +284,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       icon: LucideIcons.lock,
                       isPassword: true,
                       obscureText: !_isPasswordVisible,
-                      onTogglePassword: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                      validator: (value) => value!.length < 6 ? 'Password too short' : null,
+                      onTogglePassword: () => setState(
+                        () => _isPasswordVisible = !_isPasswordVisible,
+                      ),
+                      validator: (value) =>
+                          value!.length < 6 ? 'Password too short' : null,
                     ),
                     const SizedBox(height: 20),
                     _buildTextField(
@@ -275,9 +298,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       icon: LucideIcons.shieldCheck,
                       isPassword: true,
                       obscureText: !_isConfirmPasswordVisible,
-                      onTogglePassword: () => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
+                      onTogglePassword: () => setState(
+                        () => _isConfirmPasswordVisible =
+                            !_isConfirmPasswordVisible,
+                      ),
                       validator: (value) {
-                        if (value != _passwordController.text) return 'Passwords do not match';
+                        if (value != _passwordController.text)
+                          return 'Passwords do not match';
                         return null;
                       },
                     ),
@@ -298,11 +325,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
                             )
                           : Text(
                               'Create Account',
-                              style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
+                              style: GoogleFonts.outfit(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                     ),
                     const SizedBox(height: 32),
@@ -311,18 +344,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       children: [
                         Text(
                           'Already have an account? ',
-                          style: GoogleFonts.outfit(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
+                          style: GoogleFonts.outfit(
+                            color: theme.textTheme.bodyMedium?.color
+                                ?.withOpacity(0.6),
+                          ),
                         ),
                         TextButton(
                           onPressed: () {
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(builder: (context) => const LoginScreen()),
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
                             );
                           },
                           child: Text(
                             'Sign In',
-                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
                           ),
                         ),
                       ],
@@ -362,7 +403,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         prefixIcon: Icon(icon, size: 20),
         suffixIcon: isPassword
             ? IconButton(
-                icon: Icon(obscureText ? LucideIcons.eyeOff : LucideIcons.eye, size: 20),
+                icon: Icon(
+                  obscureText ? LucideIcons.eyeOff : LucideIcons.eye,
+                  size: 20,
+                ),
                 onPressed: onTogglePassword,
               )
             : null,
@@ -380,7 +424,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
           borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide(color: theme.colorScheme.primary, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
       ),
     );
   }

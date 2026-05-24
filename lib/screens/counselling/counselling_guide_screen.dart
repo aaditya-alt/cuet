@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CounsellingGuideScreen extends StatefulWidget {
@@ -64,7 +64,9 @@ class _CounsellingGuideScreenState extends State<CounsellingGuideScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : const Color(0xFFF8F9FF),
+      backgroundColor: isDark
+          ? const Color(0xFF0A0E14)
+          : const Color(0xFFF8F9FF),
       appBar: AppBar(
         title: const Text('Counselling Guide'),
         centerTitle: true,
@@ -88,7 +90,7 @@ class _CounsellingGuideScreenState extends State<CounsellingGuideScreen> {
                   const SizedBox(height: 32),
                   _buildSectionTitle('The CSAS Process', theme),
                   const SizedBox(height: 16),
-                  
+
                   // Render dynamic guide steps if available, else static steps
                   if (_dynamicSteps.isNotEmpty)
                     ..._dynamicSteps.asMap().entries.map((entry) {
@@ -107,23 +109,26 @@ class _CounsellingGuideScreenState extends State<CounsellingGuideScreen> {
                     _buildGuideStep(
                       step: '01',
                       title: 'Phase I: Registration',
-                      description: 'Fill the common application form on the DU portal. You need to provide your CUET application number and personal details.',
+                      description:
+                          'Fill the common application form on the DU portal. You need to provide your CUET application number and personal details.',
                       color: Colors.blue,
                     ),
                     _buildGuideStep(
                       step: '02',
                       title: 'Phase II: Preferences',
-                      description: 'This is the most critical part. You must list your college + course combinations in order of priority.',
+                      description:
+                          'This is the most critical part. You must list your college + course combinations in order of priority.',
                       color: Colors.orange,
                     ),
                     _buildGuideStep(
                       step: '03',
                       title: 'Phase III: Allocation',
-                      description: 'DU will allot seats based on your rank, category, and preference list. You must "Accept" the seat to proceed.',
+                      description:
+                          'DU will allot seats based on your rank, category, and preference list. You must "Accept" the seat to proceed.',
                       color: Colors.green,
                     ),
                   ],
-                  
+
                   const SizedBox(height: 32),
                   _buildSectionTitle('Pro Tips for Success', theme),
                   const SizedBox(height: 16),
@@ -131,7 +136,8 @@ class _CounsellingGuideScreenState extends State<CounsellingGuideScreen> {
                     theme,
                     icon: LucideIcons.layers,
                     title: 'Upgrade vs Freeze',
-                    content: 'If you get your 3rd preference, you can "Upgrade" to try for 1st or 2nd in the next round. If you are happy, "Freeze" your seat.',
+                    content:
+                        'If you get your 3rd preference, you can "Upgrade" to try for 1st or 2nd in the next round. If you are happy, "Freeze" your seat.',
                     color: Colors.purple,
                   ),
                   const SizedBox(height: 16),
@@ -139,7 +145,8 @@ class _CounsellingGuideScreenState extends State<CounsellingGuideScreen> {
                     theme,
                     icon: LucideIcons.alertTriangle,
                     title: 'The "Tie-Break" Rule',
-                    content: 'When scores are equal, DU looks at Class 12th percentages, then age, then alphabetical order of names.',
+                    content:
+                        'When scores are equal, DU looks at Class 12th percentages, then age, then alphabetical order of names.',
                     color: Colors.red,
                   ),
                   const SizedBox(height: 16),
@@ -147,7 +154,8 @@ class _CounsellingGuideScreenState extends State<CounsellingGuideScreen> {
                     theme,
                     icon: LucideIcons.fileText,
                     title: 'Document Checklist',
-                    content: 'Keep your 10th/12th Marksheets, Category Certificates (EWS/OBC-NCL/SC/ST), and CUET Scorecard ready.',
+                    content:
+                        'Keep your 10th/12th Marksheets, Category Certificates (EWS/OBC-NCL/SC/ST), and CUET Scorecard ready.',
                     color: Colors.teal,
                   ),
                   const SizedBox(height: 40),
@@ -212,7 +220,12 @@ class _CounsellingGuideScreenState extends State<CounsellingGuideScreen> {
     );
   }
 
-  Widget _buildGuideStep({required String step, required String title, required String description, required Color color}) {
+  Widget _buildGuideStep({
+    required String step,
+    required String title,
+    required String description,
+    required Color color,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       child: Row(
@@ -262,7 +275,13 @@ class _CounsellingGuideScreenState extends State<CounsellingGuideScreen> {
     );
   }
 
-  Widget _buildTopicCard(ThemeData theme, {required IconData icon, required String title, required String content, required Color color}) {
+  Widget _buildTopicCard(
+    ThemeData theme, {
+    required IconData icon,
+    required String title,
+    required String content,
+    required Color color,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

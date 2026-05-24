@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../models/college_model.dart';
 import '../../data/mock_data.dart';
@@ -21,14 +21,16 @@ class SharedWishlistScreen extends StatelessWidget {
     final List<CollegeModel> sharedColleges = collegeIds
         .map((idOrName) {
           try {
-            final decoded = Uri.decodeComponent(idOrName).toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
+            final decoded = Uri.decodeComponent(
+              idOrName,
+            ).toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
             return MockData.colleges.firstWhere((c) {
               final collegeNameLower = c.name.toLowerCase().trim();
               final collegeIdLower = c.id.toLowerCase().trim();
-              return collegeIdLower == decoded || 
-                     collegeNameLower == decoded || 
-                     collegeNameLower.contains(decoded) ||
-                     decoded.contains(collegeNameLower);
+              return collegeIdLower == decoded ||
+                  collegeNameLower == decoded ||
+                  collegeNameLower.contains(decoded) ||
+                  decoded.contains(collegeNameLower);
             });
           } catch (_) {
             return null;

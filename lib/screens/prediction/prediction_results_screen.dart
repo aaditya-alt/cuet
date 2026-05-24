@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../data/mock_data.dart';
 import '../college/college_details_screen.dart';
@@ -38,27 +38,36 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
 
   String get _chanceFilter {
     switch (_tabController.index) {
-      case 1: return 'High';
-      case 2: return 'Medium';
-      case 3: return 'Low';
-      default: return 'All';
+      case 1:
+        return 'High';
+      case 2:
+        return 'Medium';
+      case 3:
+        return 'Low';
+      default:
+        return 'All';
     }
   }
 
   // ── Build a CollegeModel from real JSON data (fallback when not in MockData) ──
   CollegeModel _resolveCollege(
-      String collegeName, CutoffProvider cutoffProvider) {
+    String collegeName,
+    CutoffProvider cutoffProvider,
+  ) {
     // 1) Try exact match in MockData
     try {
-      return MockData.colleges
-          .firstWhere((c) => c.name.toLowerCase() == collegeName.toLowerCase());
+      return MockData.colleges.firstWhere(
+        (c) => c.name.toLowerCase() == collegeName.toLowerCase(),
+      );
     } catch (_) {}
 
     // 2) Try contains match
     try {
-      return MockData.colleges.firstWhere((c) =>
-          c.name.toLowerCase().contains(collegeName.toLowerCase()) ||
-          collegeName.toLowerCase().contains(c.name.toLowerCase()));
+      return MockData.colleges.firstWhere(
+        (c) =>
+            c.name.toLowerCase().contains(collegeName.toLowerCase()) ||
+            collegeName.toLowerCase().contains(c.name.toLowerCase()),
+      );
     } catch (_) {}
 
     // 3) Build a minimal CollegeModel from real cutoff data
@@ -67,11 +76,36 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
       return CourseCutoff(
         courseName: p,
         cutoffs: {
-          'General': CategoryCutoff(round1: 0, round2: 0, round3: 0, expected2026: 0),
-          'OBC':     CategoryCutoff(round1: 0, round2: 0, round3: 0, expected2026: 0),
-          'SC':      CategoryCutoff(round1: 0, round2: 0, round3: 0, expected2026: 0),
-          'ST':      CategoryCutoff(round1: 0, round2: 0, round3: 0, expected2026: 0),
-          'EWS':     CategoryCutoff(round1: 0, round2: 0, round3: 0, expected2026: 0),
+          'General': CategoryCutoff(
+            round1: 0,
+            round2: 0,
+            round3: 0,
+            expected2026: 0,
+          ),
+          'OBC': CategoryCutoff(
+            round1: 0,
+            round2: 0,
+            round3: 0,
+            expected2026: 0,
+          ),
+          'SC': CategoryCutoff(
+            round1: 0,
+            round2: 0,
+            round3: 0,
+            expected2026: 0,
+          ),
+          'ST': CategoryCutoff(
+            round1: 0,
+            round2: 0,
+            round3: 0,
+            expected2026: 0,
+          ),
+          'EWS': CategoryCutoff(
+            round1: 0,
+            round2: 0,
+            round3: 0,
+            expected2026: 0,
+          ),
         },
         fee: 'As per DU norms',
         duration: '3 Years',
@@ -84,8 +118,7 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
       campus: _inferCampus(collegeName),
       type: 'Government',
       gender: _inferGender(collegeName),
-      logoUrl:
-          'https://upload.wikimedia.org/wikipedia/en/4/41/DU_logo.png',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/en/4/41/DU_logo.png',
       photos: const [],
       nirfRanking: 999,
       courses: courses.isNotEmpty
@@ -96,7 +129,7 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
                 cutoffs: {},
                 fee: 'As per DU norms',
                 duration: '3 Years',
-              )
+              ),
             ],
       description:
           'A constituent college of the University of Delhi offering quality education.',
@@ -119,7 +152,8 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
         n.contains('kirori') ||
         n.contains('daulat') ||
         n.contains('indraprastha') ||
-        n.contains('khalsa')) return 'North Campus';
+        n.contains('khalsa'))
+      return 'North Campus';
     if (n.contains('south') ||
         n.contains('lady shri ram') ||
         n.contains('lsr') ||
@@ -131,7 +165,8 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
         n.contains('shaheed bhagat') ||
         n.contains('arsd') ||
         n.contains('jesus') ||
-        n.contains('pgdav')) return 'South Campus';
+        n.contains('pgdav'))
+      return 'South Campus';
     return 'Off Campus';
   }
 
@@ -140,20 +175,21 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
     if (n.contains('(w)') ||
         n.contains('women') ||
         n.contains('girls') ||
-        n.contains('mahavidyalaya')) return 'Women';
+        n.contains('mahavidyalaya'))
+      return 'Women';
     return 'Co-ed';
   }
 
   @override
   Widget build(BuildContext context) {
-    final scoreProvider    = Provider.of<UserScoreProvider>(context);
-    final cutoffProvider   = Provider.of<CutoffProvider>(context);
+    final scoreProvider = Provider.of<UserScoreProvider>(context);
+    final cutoffProvider = Provider.of<CutoffProvider>(context);
     final wishlistProvider = Provider.of<WishlistProvider>(context);
-    final compareProvider  = Provider.of<CompareProvider>(context);
+    final compareProvider = Provider.of<CompareProvider>(context);
     final theme = Theme.of(context);
 
-    final userScore     = scoreProvider.score.getTotalScore(false);
-    final category      = scoreProvider.score.category;
+    final userScore = scoreProvider.score.getTotalScore(false);
+    final category = scoreProvider.score.category;
     final domainSubject = scoreProvider.score.domainSubject;
 
     // Build predictions from real data
@@ -170,28 +206,35 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       predictions = predictions
-          .where((p) =>
-              p.collegeName.toLowerCase().contains(q) ||
-              p.programName.toLowerCase().contains(q))
+          .where(
+            (p) =>
+                p.collegeName.toLowerCase().contains(q) ||
+                p.programName.toLowerCase().contains(q),
+          )
           .toList();
     }
 
     // Apply chance tab filter
     if (_chanceFilter != 'All') {
-      predictions =
-          predictions.where((p) => p.chance == _chanceFilter).toList();
+      predictions = predictions
+          .where((p) => p.chance == _chanceFilter)
+          .toList();
     }
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text('College Predictions',
-            style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(
+          'College Predictions',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+        ),
         bottom: TabBar(
           controller: _tabController,
           onTap: (_) => setState(() {}),
-          labelStyle:
-              GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold),
+          labelStyle: GoogleFonts.outfit(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
           tabs: const [
             Tab(text: 'All'),
             Tab(text: '✅ High'),
@@ -205,18 +248,22 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
           // ── Info banner ───────────────────────────────────────────────
           Container(
             color: theme.colorScheme.primary.withOpacity(0.06),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                Icon(LucideIcons.info,
-                    size: 13, color: theme.colorScheme.primary),
+                Icon(
+                  LucideIcons.info,
+                  size: 13,
+                  color: theme.colorScheme.primary,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Score: ${userScore.toStringAsFixed(0)} / 800  •  $domainSubject  •  $category',
                     style: GoogleFonts.outfit(
-                        fontSize: 11, color: Colors.grey.shade600),
+                      fontSize: 11,
+                      color: Colors.grey.shade600,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -226,8 +273,7 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
 
           // ── Search bar ────────────────────────────────────────────────
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: TextField(
               onChanged: (v) => setState(() => _searchQuery = v),
               decoration: InputDecoration(
@@ -249,7 +295,9 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
                 child: Text(
                   '${predictions.length} result${predictions.length == 1 ? '' : 's'}',
                   style: GoogleFonts.outfit(
-                      fontSize: 12, color: Colors.grey.shade500),
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
                 ),
               ),
             ),
@@ -262,41 +310,46 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CircularProgressIndicator(
-                            color: theme.colorScheme.primary),
+                          color: theme.colorScheme.primary,
+                        ),
                         const SizedBox(height: 16),
-                        Text('Loading 2025 cutoff data…',
-                            style:
-                                GoogleFonts.outfit(color: Colors.grey)),
+                        Text(
+                          'Loading 2025 cutoff data…',
+                          style: GoogleFonts.outfit(color: Colors.grey),
+                        ),
                       ],
                     ),
                   )
                 : predictions.isEmpty
-                    ? _buildEmpty(context)
-                    : ListView.builder(
-                        padding: EdgeInsets.fromLTRB(
-                          16,
-                          0,
-                          16,
-                          MediaQuery.of(context).viewInsets.bottom + 100,
-                        ),
-                        itemCount: predictions.length,
-                        itemBuilder: (context, index) {
-                          final p = predictions[index];
-                          final college =
-                              _resolveCollege(p.collegeName, cutoffProvider);
-                          final isInCompare =
-                              compareProvider.isInCompare(college.id);
-                          return _buildCard(
-                            context,
-                            p,
-                            college,
-                            isInCompare,
-                            wishlistProvider,
-                            compareProvider,
-                            theme,
-                          );
-                        },
-                      ),
+                ? _buildEmpty(context)
+                : ListView.builder(
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      0,
+                      16,
+                      MediaQuery.of(context).viewInsets.bottom + 100,
+                    ),
+                    itemCount: predictions.length,
+                    itemBuilder: (context, index) {
+                      final p = predictions[index];
+                      final college = _resolveCollege(
+                        p.collegeName,
+                        cutoffProvider,
+                      );
+                      final isInCompare = compareProvider.isInCompare(
+                        college.id,
+                      );
+                      return _buildCard(
+                        context,
+                        p,
+                        college,
+                        isInCompare,
+                        wishlistProvider,
+                        compareProvider,
+                        theme,
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -312,11 +365,14 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
                 ),
               ),
               backgroundColor: Colors.orange,
-              icon: const Icon(LucideIcons.arrowLeftRight,
-                  color: Colors.white),
-              label: Text('Compare Now',
-                  style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.bold, color: Colors.white)),
+              icon: const Icon(LucideIcons.arrowLeftRight, color: Colors.white),
+              label: Text(
+                'Compare Now',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
             )
           : null,
     );
@@ -335,14 +391,14 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
     final chanceColor = p.chance == 'High'
         ? Colors.green
         : p.chance == 'Medium'
-            ? Colors.orange
-            : Colors.red;
+        ? Colors.orange
+        : Colors.red;
 
     final chanceIcon = p.chance == 'High'
         ? LucideIcons.checkCircle2
         : p.chance == 'Medium'
-            ? LucideIcons.alertCircle
-            : LucideIcons.xCircle;
+        ? LucideIcons.alertCircle
+        : LucideIcons.xCircle;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
@@ -351,7 +407,8 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (_) => CollegeDetailsScreen(college: college)),
+            builder: (_) => CollegeDetailsScreen(college: college),
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -372,9 +429,10 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
                       border: Border.all(color: Colors.grey.shade100),
                       boxShadow: [
                         BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2)),
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
                       ],
                     ),
                     child: ClipRRect(
@@ -383,9 +441,10 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
                         college.logoUrl,
                         fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) => const Icon(
-                            LucideIcons.building2,
-                            color: Colors.grey,
-                            size: 20),
+                          LucideIcons.building2,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
@@ -409,7 +468,9 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
                         Text(
                           p.programName,
                           style: GoogleFonts.outfit(
-                              fontSize: 11, color: Colors.grey.shade600),
+                            fontSize: 11,
+                            color: Colors.grey.shade600,
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -422,14 +483,15 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
                     children: [
                       GestureDetector(
                         onTap: () {
-                          final was = wishlistProvider
-                              .isInWishlist(college.id);
+                          final was = wishlistProvider.isInWishlist(college.id);
                           wishlistProvider.toggleWishlist(college);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(was
-                                  ? '${college.name} removed'
-                                  : '${college.name} added to wishlist'),
+                              content: Text(
+                                was
+                                    ? '${college.name} removed'
+                                    : '${college.name} added to wishlist',
+                              ),
                               duration: const Duration(seconds: 1),
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -451,8 +513,10 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
                           if (!isInCompare && compareProvider.count >= 2) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                  content: Text(
-                                      'You can only compare 2 colleges at a time.')),
+                                content: Text(
+                                  'You can only compare 2 colleges at a time.',
+                                ),
+                              ),
                             );
                             return;
                           }
@@ -503,12 +567,15 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
                   Flexible(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 7),
+                        horizontal: 10,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
                         color: chanceColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: chanceColor.withOpacity(0.25)),
+                          color: chanceColor.withOpacity(0.25),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -539,8 +606,7 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
     );
   }
 
-  Widget _buildMetric(
-      String label, String value, IconData icon, Color color) {
+  Widget _buildMetric(String label, String value, IconData icon, Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -548,9 +614,13 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
           children: [
             Icon(icon, size: 10, color: color),
             const SizedBox(width: 3),
-            Text(label,
-                style: GoogleFonts.outfit(
-                    fontSize: 9, color: Colors.grey.shade500)),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                fontSize: 9,
+                color: Colors.grey.shade500,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 2),
@@ -573,13 +643,16 @@ class _PredictionResultsScreenState extends State<PredictionResultsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(LucideIcons.searchX,
-                size: 64, color: Colors.grey.shade300),
+            Icon(LucideIcons.searchX, size: 64, color: Colors.grey.shade300),
             const SizedBox(height: 16),
-            Text('No matching colleges found',
-                style: GoogleFonts.outfit(
-                    fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center),
+            Text(
+              'No matching colleges found',
+              style: GoogleFonts.outfit(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
             Text(
               'Try selecting a different domain subject\nor adjusting your score on the home screen.',

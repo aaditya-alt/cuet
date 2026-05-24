@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../providers/notification_service.dart';
 
@@ -18,7 +18,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
     // Refresh notifications when entering the screen
     Future.microtask(() {
       if (mounted) {
-        Provider.of<NotificationService>(context, listen: false).fetchNotifications();
+        Provider.of<NotificationService>(
+          context,
+          listen: false,
+        ).fetchNotifications();
       }
     });
   }
@@ -26,13 +29,23 @@ class _NotificationScreenState extends State<NotificationScreen> {
   IconData _getIconForNotification(String title, String desc) {
     final t = title.toLowerCase();
     final d = desc.toLowerCase();
-    if (t.contains('result') || t.contains('cutoff') || t.contains('csas') || t.contains('round')) {
+    if (t.contains('result') ||
+        t.contains('cutoff') ||
+        t.contains('csas') ||
+        t.contains('round')) {
       return LucideIcons.bellRing;
-    } else if (t.contains('accuracy') || t.contains('model') || t.contains('update') || t.contains('guide')) {
+    } else if (t.contains('accuracy') ||
+        t.contains('model') ||
+        t.contains('update') ||
+        t.contains('guide')) {
       return LucideIcons.sparkles;
-    } else if (t.contains('payment') || t.contains('premium') || t.contains('crown')) {
+    } else if (t.contains('payment') ||
+        t.contains('premium') ||
+        t.contains('crown')) {
       return LucideIcons.crown;
-    } else if (t.contains('wishlist') || t.contains('favorite') || t.contains('heart')) {
+    } else if (t.contains('wishlist') ||
+        t.contains('favorite') ||
+        t.contains('heart')) {
       return LucideIcons.heart;
     }
     return LucideIcons.info;
@@ -40,13 +53,23 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   Color _getIconColorForNotification(String title) {
     final t = title.toLowerCase();
-    if (t.contains('result') || t.contains('cutoff') || t.contains('csas') || t.contains('round')) {
+    if (t.contains('result') ||
+        t.contains('cutoff') ||
+        t.contains('csas') ||
+        t.contains('round')) {
       return Colors.blue;
-    } else if (t.contains('accuracy') || t.contains('model') || t.contains('update') || t.contains('guide')) {
+    } else if (t.contains('accuracy') ||
+        t.contains('model') ||
+        t.contains('update') ||
+        t.contains('guide')) {
       return Colors.purple;
-    } else if (t.contains('payment') || t.contains('premium') || t.contains('crown')) {
+    } else if (t.contains('payment') ||
+        t.contains('premium') ||
+        t.contains('crown')) {
       return Colors.orange;
-    } else if (t.contains('wishlist') || t.contains('favorite') || t.contains('heart')) {
+    } else if (t.contains('wishlist') ||
+        t.contains('favorite') ||
+        t.contains('heart')) {
       return Colors.red;
     }
     return Colors.teal;
@@ -70,9 +93,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final notificationService = Provider.of<NotificationService>(context);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : const Color(0xFFF8F9FF),
+      backgroundColor: isDark
+          ? const Color(0xFF0A0E14)
+          : const Color(0xFFF8F9FF),
       appBar: AppBar(
-        title: Text('Notifications', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Notifications',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         actions: [
           if (notificationService.notifications.isNotEmpty)
@@ -93,24 +121,28 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () => notificationService.fetchNotifications(),
-        child: notificationService.isLoading && notificationService.notifications.isEmpty
+        child:
+            notificationService.isLoading &&
+                notificationService.notifications.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : notificationService.notifications.isEmpty
-                ? _buildEmptyState()
-                : ListView(
-                    padding: const EdgeInsets.all(20),
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    children: [
-                      _buildSectionHeader('Recent Updates'),
-                      ...notificationService.notifications.map((n) => _NotificationItem(
-                            notification: n,
-                            icon: _getIconForNotification(n.mainText, n.description),
-                            iconColor: _getIconColorForNotification(n.mainText),
-                            timeStr: _formatTimeAgo(n.createdAt),
-                            onRead: () => notificationService.markAsRead(n.id),
-                          )),
-                    ],
+            ? _buildEmptyState()
+            : ListView(
+                padding: const EdgeInsets.all(20),
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  _buildSectionHeader('Recent Updates'),
+                  ...notificationService.notifications.map(
+                    (n) => _NotificationItem(
+                      notification: n,
+                      icon: _getIconForNotification(n.mainText, n.description),
+                      iconColor: _getIconColorForNotification(n.mainText),
+                      timeStr: _formatTimeAgo(n.createdAt),
+                      onRead: () => notificationService.markAsRead(n.id),
+                    ),
                   ),
+                ],
+              ),
       ),
     );
   }
@@ -143,7 +175,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 color: Colors.blue.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(LucideIcons.bellOff, size: 64, color: Colors.blue),
+              child: const Icon(
+                LucideIcons.bellOff,
+                size: 64,
+                color: Colors.blue,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
@@ -207,14 +243,20 @@ class _NotificationItemState extends State<_NotificationItem> {
       curve: Curves.easeInOut,
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark 
-            ? (isUnread ? Colors.white.withOpacity(0.08) : const Color(0xFF161C24))
-            : (isUnread ? theme.colorScheme.primary.withOpacity(0.05) : Colors.white),
+        color: isDark
+            ? (isUnread
+                  ? Colors.white.withOpacity(0.08)
+                  : const Color(0xFF161C24))
+            : (isUnread
+                  ? theme.colorScheme.primary.withOpacity(0.05)
+                  : Colors.white),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isUnread 
-              ? theme.colorScheme.primary.withOpacity(0.3) 
-              : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+          color: isUnread
+              ? theme.colorScheme.primary.withOpacity(0.3)
+              : (isDark
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.black.withOpacity(0.05)),
         ),
         boxShadow: [
           if (!isDark && !isUnread)
@@ -252,7 +294,11 @@ class _NotificationItemState extends State<_NotificationItem> {
                             color: widget.iconColor.withOpacity(0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(widget.icon, color: widget.iconColor, size: 20),
+                          child: Icon(
+                            widget.icon,
+                            color: widget.iconColor,
+                            size: 20,
+                          ),
                         ),
                         if (isUnread)
                           Positioned(
@@ -264,7 +310,12 @@ class _NotificationItemState extends State<_NotificationItem> {
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.primary,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: isDark ? const Color(0xFF161C24) : Colors.white, width: 2),
+                                border: Border.all(
+                                  color: isDark
+                                      ? const Color(0xFF161C24)
+                                      : Colors.white,
+                                  width: 2,
+                                ),
                               ),
                             ),
                           ),
@@ -283,13 +334,18 @@ class _NotificationItemState extends State<_NotificationItem> {
                                   n.mainText,
                                   style: GoogleFonts.outfit(
                                     fontSize: 16,
-                                    fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
+                                    fontWeight: isUnread
+                                        ? FontWeight.bold
+                                        : FontWeight.w600,
                                   ),
                                 ),
                               ),
                               Text(
                                 widget.timeStr,
-                                style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey),
+                                style: GoogleFonts.outfit(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ],
                           ),
@@ -300,7 +356,9 @@ class _NotificationItemState extends State<_NotificationItem> {
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.outfit(
                               fontSize: 14,
-                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
                               height: 1.4,
                             ),
                           ),
@@ -308,7 +366,9 @@ class _NotificationItemState extends State<_NotificationItem> {
                       ),
                     ),
                     Icon(
-                      _isExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+                      _isExpanded
+                          ? LucideIcons.chevronUp
+                          : LucideIcons.chevronDown,
                       size: 18,
                       color: Colors.grey,
                     ),
@@ -339,14 +399,19 @@ class _NotificationItemState extends State<_NotificationItem> {
                           });
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                          backgroundColor: theme.colorScheme.primary
+                              .withOpacity(0.1),
                           foregroundColor: theme.colorScheme.primary,
                           elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         child: Text(
                           'Dismiss',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],

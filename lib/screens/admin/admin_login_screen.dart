@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'admin_dashboard.dart';
@@ -29,7 +29,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   Future<void> _handleAdminLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
+
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
 
@@ -43,7 +43,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
             .maybeSingle();
 
         // Local development bypass fallback
-        final isLocalFallback = (email == 'admin@cuet.com' && password == 'admin123');
+        final isLocalFallback =
+            (email == 'admin@cuet.com' && password == 'admin123');
 
         if (response != null || isLocalFallback) {
           final prefs = await SharedPreferences.getInstance();
@@ -52,9 +53,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(isLocalFallback 
-                    ? 'Logged in as Admin (Local Fallback)' 
-                    : 'Admin Session Verified Successfully!'),
+                content: Text(
+                  isLocalFallback
+                      ? 'Logged in as Admin (Local Fallback)'
+                      : 'Admin Session Verified Successfully!',
+                ),
                 backgroundColor: Colors.green,
                 behavior: SnackBarBehavior.floating,
               ),
@@ -78,7 +81,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         }
       } catch (e) {
         debugPrint('Admin table query failed: $e');
-        
+
         // Fallback for safety in case admin table or policies are not ready yet
         if (email == 'admin@cuet.com' && password == 'admin123') {
           final prefs = await SharedPreferences.getInstance();
@@ -87,7 +90,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Verification bypassed: Logged in via developer static credentials.'),
+                content: Text(
+                  'Verification bypassed: Logged in via developer static credentials.',
+                ),
                 backgroundColor: Colors.orange,
                 behavior: SnackBarBehavior.floating,
               ),
@@ -131,7 +136,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               color: theme.scaffoldBackgroundColor.withOpacity(0.8),
               shape: BoxShape.circle,
             ),
-            child: Icon(LucideIcons.chevronLeft, size: 20, color: theme.colorScheme.primary),
+            child: Icon(
+              LucideIcons.chevronLeft,
+              size: 20,
+              color: theme.colorScheme.primary,
+            ),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -161,7 +170,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       color: Colors.red.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(LucideIcons.shieldAlert, size: 54, color: Colors.red),
+                    child: const Icon(
+                      LucideIcons.shieldAlert,
+                      size: 54,
+                      color: Colors.red,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   Text(
@@ -175,10 +188,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   const SizedBox(height: 8),
                   Text(
                     'Provide static administrative authorization',
-                    style: GoogleFonts.outfit(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
+                    style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey),
                   ),
                 ],
               ),
@@ -231,10 +241,14 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         prefixIcon: const Icon(LucideIcons.lock, size: 20),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _isPasswordVisible ? LucideIcons.eyeOff : LucideIcons.eye,
+                            _isPasswordVisible
+                                ? LucideIcons.eyeOff
+                                : LucideIcons.eye,
                             size: 20,
                           ),
-                          onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                          onPressed: () => setState(
+                            () => _isPasswordVisible = !_isPasswordVisible,
+                          ),
                         ),
                         filled: true,
                         fillColor: theme.cardColor,
@@ -263,11 +277,17 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
                             )
                           : Text(
                               'Verify & Open Panel',
-                              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold),
+                              style: GoogleFonts.outfit(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                     ),
                     const SizedBox(height: 24),
@@ -276,16 +296,28 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       decoration: BoxDecoration(
                         color: Colors.amber.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                        border: Border.all(
+                          color: Colors.amber.withOpacity(0.3),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(LucideIcons.info, color: Colors.amber, size: 20),
+                          const Icon(
+                            LucideIcons.info,
+                            color: Colors.amber,
+                            size: 20,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Developer Note: For testing prior to seeding your "public.admin" table, use the static fallback:\n\nEmail: admin@cuet.com\nPassword: admin123',
-                              style: GoogleFonts.outfit(fontSize: 12, color: isDark ? Colors.amber[200] : Colors.amber[800], height: 1.4),
+                              style: GoogleFonts.outfit(
+                                fontSize: 12,
+                                color: isDark
+                                    ? Colors.amber[200]
+                                    : Colors.amber[800],
+                                height: 1.4,
+                              ),
                             ),
                           ),
                         ],

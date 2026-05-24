@@ -1,7 +1,7 @@
 import 'package:cuet/screens/prediction/du_college_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../models/du_models.dart';
 import '../../providers/du_wishlist_provider.dart';
@@ -92,11 +92,13 @@ class _DuCollegeListScreenState extends State<DuCollegeListScreen> {
       } else {
         _filteredColleges = widget.colleges.where((c) {
           final q = query.toLowerCase();
-          final matchSearch = query.isEmpty || 
+          final matchSearch =
+              query.isEmpty ||
               c.collegeName.toLowerCase().contains(q) ||
               c.programs.any((p) => p.programName.toLowerCase().contains(q));
-          
-          final matchCourse = _selectedCourse == null || 
+
+          final matchCourse =
+              _selectedCourse == null ||
               c.programs.any((p) => p.programName == _selectedCourse);
 
           return matchSearch && matchCourse;
@@ -138,7 +140,10 @@ class _DuCollegeListScreenState extends State<DuCollegeListScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+                colors: [
+                  theme.colorScheme.primary,
+                  theme.colorScheme.secondary,
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -151,15 +156,41 @@ class _DuCollegeListScreenState extends State<DuCollegeListScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Your Best Merit Score', style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.8), fontSize: 12)),
-                    Text(_getUserBestScoreDisplay(), style: GoogleFonts.outfit(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Your Best Merit Score',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      _getUserBestScoreDisplay(),
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
-                  child: Text(widget.category, style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    widget.category,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -170,7 +201,13 @@ class _DuCollegeListScreenState extends State<DuCollegeListScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text('Filter by Courses', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text(
+                'Filter by Courses',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
             ),
           ),
           SingleChildScrollView(
@@ -193,7 +230,9 @@ class _DuCollegeListScreenState extends State<DuCollegeListScreen> {
                       label: Text(prog),
                       selected: _selectedCourse == prog,
                       onSelected: (selected) {
-                        setState(() => _selectedCourse = selected ? prog : null);
+                        setState(
+                          () => _selectedCourse = selected ? prog : null,
+                        );
                         _filter(_searchQuery);
                       },
                     ),
@@ -249,17 +288,28 @@ class _DuCollegeListScreenState extends State<DuCollegeListScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(LucideIcons.searchX, size: 48, color: Colors.grey.shade400),
+                          Icon(
+                            LucideIcons.searchX,
+                            size: 48,
+                            color: Colors.grey.shade400,
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             'No colleges found for this criteria.',
-                            style: GoogleFonts.outfit(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w500),
+                            style: GoogleFonts.outfit(
+                              color: Colors.grey,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'No colleges found. Try adjusting your category or subjects. Ensure you selected at least one Language (List A) subject, as it is required for most DU programs.',
-                            style: GoogleFonts.outfit(color: Colors.grey.shade500, fontSize: 12),
+                            style: GoogleFonts.outfit(
+                              color: Colors.grey.shade500,
+                              fontSize: 12,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -331,8 +381,10 @@ class _DuCollegeListScreenState extends State<DuCollegeListScreen> {
                             college.logoUrl!,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) =>
-                                const Icon(LucideIcons.building2,
-                                    color: Colors.grey),
+                                const Icon(
+                                  LucideIcons.building2,
+                                  color: Colors.grey,
+                                ),
                           ),
                         )
                       : const Icon(LucideIcons.building2, color: Colors.grey),
@@ -365,7 +417,9 @@ class _DuCollegeListScreenState extends State<DuCollegeListScreen> {
                 // Chance Badge
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 5),
+                    horizontal: 8,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: chanceColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
@@ -406,13 +460,9 @@ class _DuCollegeListScreenState extends State<DuCollegeListScreen> {
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 250),
                       child: Icon(
-                        isWishlisted
-                            ? LucideIcons.heart
-                            : LucideIcons.heart,
+                        isWishlisted ? LucideIcons.heart : LucideIcons.heart,
                         key: ValueKey(isWishlisted),
-                        color: isWishlisted
-                            ? Colors.red
-                            : Colors.grey.shade400,
+                        color: isWishlisted ? Colors.red : Colors.grey.shade400,
                         size: 22,
                       ),
                     ),
