@@ -58,7 +58,7 @@ class _CutoffExplorerScreenState extends State<CutoffExplorerScreen> {
         _fetchPrograms(_selectedCollege!);
       }
     } catch (e) {
-      debugPrint('Error fetching colleges: $e');
+      debugPrint('Error fetching colleges : $e');
       setState(() => _isLoadingColleges = false);
     }
   }
