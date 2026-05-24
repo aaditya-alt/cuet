@@ -38,9 +38,8 @@ class _CutoffExplorerScreenState extends State<CutoffExplorerScreen> {
     setState(() => _isLoadingColleges = true);
     try {
       final res = await _supabase
-          .from('du_cutoffs')
-          .select('college_name')
-          .limit(10000); // ← fetch all rows
+          .from('du_college_details')
+          .select('college_name'); // fetch all colleges
 
       final rawList = (res as List)
           .map((e) => e['college_name'] as String)
@@ -55,6 +54,9 @@ class _CutoffExplorerScreenState extends State<CutoffExplorerScreen> {
         }
         _isLoadingColleges = false;
       });
+      if (_selectedCollege != null) {
+        _fetchPrograms(_selectedCollege!);
+      }
     } catch (e) {
       debugPrint('Error fetching colleges: $e');
       setState(() => _isLoadingColleges = false);

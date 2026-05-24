@@ -12,6 +12,7 @@ import '../../providers/notification_service.dart';
 import '../../providers/app_settings_provider.dart';
 import '../../providers/du_preference_service.dart';
 import '../../models/du_models.dart';
+import '../../data/mock_data.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -88,6 +89,40 @@ class _AdminDashboardState extends State<AdminDashboard>
   double _campusSelectedSafety = 4.8;
   bool _isPublishingCampusGuide = false;
 
+  // PG Accommodation Form Controllers & State
+  final _pgFormKey = GlobalKey<FormState>();
+  final _pgNameController = TextEditingController();
+  final _pgAreaController = TextEditingController();
+  final _pgAddressController = TextEditingController();
+  final _pgMinRentController = TextEditingController();
+  final _pgMaxRentController = TextEditingController();
+  final _pgDepositController = TextEditingController();
+  final _pgContactPhoneController = TextEditingController();
+  final _pgContactEmailController = TextEditingController();
+  final _pgMapsUrlController = TextEditingController();
+  final _pgNearestMetroController = TextEditingController();
+  final _pgMetroMinsController = TextEditingController();
+  final _pgDescriptionController = TextEditingController();
+  final _pgImagesController = TextEditingController();
+
+  String _pgSelectedCampusZone = 'North Campus';
+  String _pgSelectedGender = 'Co-Ed';
+  bool _pgMealsIncluded = false;
+  bool _pgIsVerified = false;
+  bool _pgIsActive = true;
+  double _pgRating = 4.5;
+  int _pgReviewCount = 0;
+
+  final Set<String> _pgSelectedRoomTypes = {'Single', 'Double'};
+  final Set<String> _pgSelectedAmenities = {'Wi-Fi', 'CCTV', 'RO Water'};
+
+  List<Map<String, dynamic>> _pgNearbyColleges = [];
+  int? _editingPgId;
+  bool _isSavingPg = false;
+  bool _isLoadingPgs = false;
+  List<Map<String, dynamic>> _allPgs = [];
+  bool _isShowingPgs = false;
+
   // Preference sheets tab variables
   List<DuPreferenceSheet> _adminSheets = [];
   bool _isLoadingSheets = false;
@@ -105,6 +140,7 @@ class _AdminDashboardState extends State<AdminDashboard>
     _fetchPremiumFlag();
     _fetchPreferenceSheets();
     _fetchCommunityMessages();
+    _fetchAdminPgs();
     Provider.of<DuCampusService>(context, listen: false).fetchGuides();
   }
 
@@ -183,6 +219,19 @@ class _AdminDashboardState extends State<AdminDashboard>
     _campusRickshawFareController.dispose();
     _campusPgRentController.dispose();
     _campusDescriptionController.dispose();
+    _pgNameController.dispose();
+    _pgAreaController.dispose();
+    _pgAddressController.dispose();
+    _pgMinRentController.dispose();
+    _pgMaxRentController.dispose();
+    _pgDepositController.dispose();
+    _pgContactPhoneController.dispose();
+    _pgContactEmailController.dispose();
+    _pgMapsUrlController.dispose();
+    _pgNearestMetroController.dispose();
+    _pgMetroMinsController.dispose();
+    _pgDescriptionController.dispose();
+    _pgImagesController.dispose();
     super.dispose();
   }
 
@@ -244,6 +293,265 @@ class _AdminDashboardState extends State<AdminDashboard>
             course.contains(q);
       }).toList();
     });
+  }
+
+  // ─── Fetch all PGs for admin list ─────────────────────────────────────────
+  Future<void> _fetchAdminPgs() async {
+    if (!mounted) return;
+    setState(() => _isLoadingPgs = true);
+    try {
+      final res = await Supabase.instance.client
+          .from('du_pg_listings')
+          .select()
+          .order('id', ascending: false);
+      if (mounted) {
+        setState(() {
+          _allPgs = List<Map<String, dynamic>>.from(res);
+          _isLoadingPgs = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingPgs = false);
+      debugPrint('fetchAdminPgs error: $e');
+    }
+  }
+
+  // ─── Clear PG form ────────────────────────────────────────────────────────
+  void _clearPgForm() {
+    setState(() => _editingPgId = null);
+    _pgNameController.clear();
+    _pgAreaController.clear();
+    _pgAddressController.clear();
+    _pgMinRentController.clear();
+    _pgMaxRentController.clear();
+    _pgDepositController.clear();
+    _pgContactPhoneController.clear();
+    _pgContactEmailController.clear();
+    _pgMapsUrlController.clear();
+    _pgNearestMetroController.clear();
+    _pgMetroMinsController.clear();
+    _pgDescriptionController.clear();
+    _pgImagesController.clear();
+    _pgSelectedCampusZone = 'North Campus';
+    _pgSelectedGender = 'Co-Ed';
+    _pgMealsIncluded = false;
+    _pgIsVerified = false;
+    _pgIsActive = true;
+    _pgRating = 4.5;
+    _pgReviewCount = 0;
+    _pgSelectedRoomTypes
+      ..clear()
+      ..addAll({'Single', 'Double'});
+    _pgSelectedAmenities
+      ..clear()
+      ..addAll({'Wi-Fi', 'CCTV', 'RO Water'});
+    _pgNearbyColleges = [];
+  }
+
+  // ─── Populate form for edit ───────────────────────────────────────────────
+  void _populatePgForm(Map<String, dynamic> pg) {
+    setState(() {
+      _editingPgId = pg['id'] as int;
+      _pgNameController.text = pg['name'] ?? '';
+      _pgAreaController.text = pg['area'] ?? '';
+      _pgAddressController.text = pg['full_address'] ?? '';
+      _pgMinRentController.text = (pg['rent_min'] ?? '').toString();
+      _pgMaxRentController.text = (pg['rent_max'] ?? '').toString();
+      _pgDepositController.text = (pg['deposit'] ?? '').toString();
+      _pgContactPhoneController.text = pg['contact_phone'] ?? '';
+      _pgContactEmailController.text = pg['contact_email'] ?? '';
+      _pgMapsUrlController.text = pg['maps_url'] ?? '';
+      _pgNearestMetroController.text = pg['nearest_metro'] ?? '';
+      _pgMetroMinsController.text = (pg['walking_mins_to_metro'] ?? '')
+          .toString();
+      _pgDescriptionController.text = pg['description'] ?? '';
+      _pgImagesController.text = (pg['images'] as List<dynamic>? ?? []).join(
+        ', ',
+      );
+      _pgSelectedCampusZone = pg['campus_zone'] ?? 'North Campus';
+      _pgSelectedGender = pg['gender'] ?? 'Co-Ed';
+      _pgMealsIncluded = pg['meals_included'] ?? false;
+      _pgIsVerified = pg['is_verified'] ?? false;
+      _pgIsActive = pg['is_active'] ?? true;
+      _pgRating = (pg['rating'] as num?)?.toDouble() ?? 4.5;
+      _pgReviewCount = pg['review_count'] ?? 0;
+      _pgSelectedRoomTypes
+        ..clear()
+        ..addAll(List<String>.from(pg['room_types'] ?? []));
+      _pgSelectedAmenities
+        ..clear()
+        ..addAll(List<String>.from(pg['amenities'] ?? []));
+    });
+    // Scroll to form top (handled by SingleChildScrollView naturally)
+  }
+
+  // ─── Save PG (insert or update) ───────────────────────────────────────────
+  Future<void> _savePg() async {
+    if (!_pgFormKey.currentState!.validate()) return;
+    setState(() => _isSavingPg = true);
+
+    final images = _pgImagesController.text
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    final payload = {
+      'name': _pgNameController.text.trim(),
+      'area': _pgAreaController.text.trim(),
+      'full_address': _pgAddressController.text.trim().isEmpty
+          ? null
+          : _pgAddressController.text.trim(),
+      'campus_zone': _pgSelectedCampusZone,
+      'gender': _pgSelectedGender,
+      'rent_min': int.tryParse(_pgMinRentController.text) ?? 0,
+      'rent_max': int.tryParse(_pgMaxRentController.text) ?? 0,
+      'deposit': _pgDepositController.text.trim().isEmpty
+          ? null
+          : int.tryParse(_pgDepositController.text),
+      'room_types': _pgSelectedRoomTypes.toList(),
+      'amenities': _pgSelectedAmenities.toList(),
+      'meals_included': _pgMealsIncluded,
+      'rating': _pgRating,
+      'review_count': _pgReviewCount,
+      'contact_phone': _pgContactPhoneController.text.trim().isEmpty
+          ? null
+          : _pgContactPhoneController.text.trim(),
+      'contact_email': _pgContactEmailController.text.trim().isEmpty
+          ? null
+          : _pgContactEmailController.text.trim(),
+      'maps_url': _pgMapsUrlController.text.trim().isEmpty
+          ? null
+          : _pgMapsUrlController.text.trim(),
+      'nearest_metro': _pgNearestMetroController.text.trim().isEmpty
+          ? null
+          : _pgNearestMetroController.text.trim(),
+      'walking_mins_to_metro': _pgMetroMinsController.text.trim().isEmpty
+          ? null
+          : int.tryParse(_pgMetroMinsController.text),
+      'description': _pgDescriptionController.text.trim().isEmpty
+          ? null
+          : _pgDescriptionController.text.trim(),
+      'images': images,
+      'is_verified': _pgIsVerified,
+      'is_active': _pgIsActive,
+    };
+
+    try {
+      int pgId;
+      if (_editingPgId != null) {
+        await Supabase.instance.client
+            .from('du_pg_listings')
+            .update(payload)
+            .eq('id', _editingPgId!);
+        pgId = _editingPgId!;
+      } else {
+        final res = await Supabase.instance.client
+            .from('du_pg_listings')
+            .insert(payload)
+            .select('id')
+            .single();
+        pgId = res['id'] as int;
+      }
+
+      // Save nearby college associations
+      if (_pgNearbyColleges.isNotEmpty) {
+        // Delete old associations first
+        await Supabase.instance.client
+            .from('du_pg_college_map')
+            .delete()
+            .eq('pg_id', pgId);
+
+        // Insert new ones
+        final associations = _pgNearbyColleges
+            .where((c) => (c['college_name'] as String?)?.isNotEmpty == true)
+            .map(
+              (c) => {
+                'pg_id': pgId,
+                'college_name': c['college_name'],
+                'distance_mins': c['distance_mins'],
+                'distance_type': c['distance_type'] ?? 'walk',
+              },
+            )
+            .toList();
+
+        if (associations.isNotEmpty) {
+          await Supabase.instance.client
+              .from('du_pg_college_map')
+              .insert(associations);
+        }
+      }
+
+      if (mounted) {
+        _showSuccessDialog(
+          _editingPgId != null ? 'PG Updated!' : 'PG Added!',
+          _editingPgId != null
+              ? 'The PG listing has been updated successfully.'
+              : 'New PG listing is now live for students.',
+        );
+        _clearPgForm();
+        await _fetchAdminPgs();
+      }
+    } catch (e) {
+      if (mounted) _showErrorSnackBar('Save failed: $e');
+    } finally {
+      if (mounted) setState(() => _isSavingPg = false);
+    }
+  }
+
+  // ─── Delete PG ────────────────────────────────────────────────────────────
+  Future<void> _deletePg(int id, String name) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: const [
+            Icon(LucideIcons.alertTriangle, color: Colors.red, size: 24),
+            SizedBox(width: 10),
+            Text('Delete PG?'),
+          ],
+        ),
+        content: Text(
+          'Permanently delete "$name" and all its college associations?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    try {
+      // College map rows deleted via CASCADE in schema
+      await Supabase.instance.client
+          .from('du_pg_listings')
+          .delete()
+          .eq('id', id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('PG deleted successfully.'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        await _fetchAdminPgs();
+      }
+    } catch (e) {
+      if (mounted) _showErrorSnackBar('Delete failed: $e');
+    }
   }
 
   Future<void> _publishNotification() async {
@@ -2887,283 +3195,666 @@ class _AdminDashboardState extends State<AdminDashboard>
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // REPLACE _buildCampusHubModTab with this method
+  // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildCampusHubModTab(ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
-    final campusService = Provider.of<DuCampusService>(context);
+
+    // Available options
+    const campusZones = ['North Campus', 'South Campus', 'Off Campus'];
+    const genders = ['Co-Ed', 'Girls', 'Boys'];
+    const roomTypeOptions = ['Single', 'Double', 'Triple', 'Quadruple'];
+    const amenityOptions = [
+      'Wi-Fi',
+      'AC',
+      'Meals',
+      'CCTV',
+      'Laundry',
+      'Gym',
+      'RO Water',
+      'Geyser',
+      'Inverter',
+      'Parking',
+      'Medical Room',
+      'Security',
+    ];
+    const duColleges = [
+      'Shri Ram College of Commerce',
+      'Hindu College',
+      'Miranda House',
+      'Lady Shri Ram College for Women',
+      'Hansraj College',
+      'Kirori Mal College',
+      'Ramjas College',
+      'St. Stephen\'s College',
+      'Indraprastha College for Women',
+      'Sri Guru Tegh Bahadur Khalsa College',
+      'Maitreyi College',
+      'Atma Ram Sanatan Dharma College',
+      'Sri Venkateswara College',
+      'Gargi College',
+      'Kamala Nehru College',
+      'Lady Irwin College',
+      'Daulat Ram College',
+      'Acharya Narendra Dev College',
+      'Deshbandhu College',
+      'Ramanujan College',
+      'Shaheed Bhagat Singh College',
+      'College of Vocational Studies',
+      'P.G.D.A.V. College',
+      'Shaheed Sukhdev College of Business Studies',
+      'Sri Guru Gobind Singh College of Commerce',
+      'Keshav Mahavidyalaya',
+      'Jesus and Mary College',
+    ];
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Campus Hub content manager',
-            style: GoogleFonts.outfit(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+          // ── Header ─────────────────────────────────────────────────────────
+          Row(
+            children: [
+              Icon(
+                _editingPgId != null
+                    ? LucideIcons.edit3
+                    : LucideIcons.plusCircle,
+                color: theme.colorScheme.primary,
+                size: 22,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  _editingPgId != null
+                      ? 'Edit PG Listing #$_editingPgId'
+                      : 'Add New PG Listing',
+                  style: GoogleFonts.outfit(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              if (_editingPgId != null)
+                TextButton.icon(
+                  onPressed: _clearPgForm,
+                  icon: const Icon(LucideIcons.x, size: 14),
+                  label: const Text('Cancel Edit'),
+                ),
+            ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
-            'Create or moderate illustrated PG rentals and metro transit guides in real-time.',
-            style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey),
+            'Manage PG listings shown to students in the Campus Hub screen.',
+            style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
-          // Add / Edit Form Card
+          // ── FORM CARD ───────────────────────────────────────────────────────
           Card(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Form(
-                key: _campusFormKey,
+                key: _pgFormKey,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // ── Basic Info ─────────────────────────────────────────
+                    _AdminSectionLabel('Basic Information'),
+                    const SizedBox(height: 10),
+
                     TextFormField(
-                      controller: _campusCollegeNameController,
+                      controller: _pgNameController,
                       decoration: const InputDecoration(
-                        labelText: 'College Name',
-                        hintText: 'E.g. Shri Ram College of Commerce (SRCC)',
+                        labelText: 'PG Name *',
+                        hintText: 'e.g. Saksham Boys PG',
                         border: OutlineInputBorder(),
-                        prefixIcon: Icon(LucideIcons.school),
+                        prefixIcon: Icon(LucideIcons.home, size: 18),
                       ),
                       validator: (v) =>
-                          v == null || v.isEmpty ? 'Required' : null,
+                          (v == null || v.isEmpty) ? 'Name is required' : null,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
+
                     Row(
                       children: [
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: _campusSelectedType,
+                          child: TextFormField(
+                            controller: _pgAreaController,
                             decoration: const InputDecoration(
-                              labelText: 'Campus Cluster',
+                              labelText: 'Area / Locality *',
+                              hintText: 'e.g. Kamla Nagar',
                               border: OutlineInputBorder(),
                             ),
-                            items: ['North', 'South', 'Off'].map((c) {
-                              return DropdownMenuItem<String>(
-                                value: c,
-                                child: Text(c),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              if (val != null)
-                                setState(() => _campusSelectedType = val);
-                            },
+                            validator: (v) =>
+                                (v == null || v.isEmpty) ? 'Required' : null,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: _pgSelectedCampusZone,
+                            decoration: const InputDecoration(
+                              labelText: 'Campus Zone *',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: campusZones
+                                .map(
+                                  (z) => DropdownMenuItem(
+                                    value: z,
+                                    child: Text(
+                                      z,
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) =>
+                                setState(() => _pgSelectedCampusZone = v!),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    TextFormField(
+                      controller: _pgAddressController,
+                      decoration: const InputDecoration(
+                        labelText: 'Full Address',
+                        hintText: 'e.g. A-12, Vijay Nagar, Delhi 110009',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(LucideIcons.mapPin, size: 18),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    DropdownButtonFormField<String>(
+                      value: _pgSelectedGender,
+                      decoration: const InputDecoration(
+                        labelText: 'Gender *',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(LucideIcons.users, size: 18),
+                      ),
+                      items: genders
+                          .map(
+                            (g) => DropdownMenuItem(value: g, child: Text(g)),
+                          )
+                          .toList(),
+                      onChanged: (v) => setState(() => _pgSelectedGender = v!),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Rent & Deposit ─────────────────────────────────────
+                    _AdminSectionLabel('Rent & Financial'),
+                    const SizedBox(height: 10),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _pgMinRentController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Min Rent (₹) *',
+                              hintText: '8000',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (v) =>
+                                (v == null || v.isEmpty) ? 'Required' : null,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _pgMaxRentController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Max Rent (₹) *',
+                              hintText: '14000',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (v) =>
+                                (v == null || v.isEmpty) ? 'Required' : null,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _pgDepositController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Deposit (₹)',
+                              hintText: '20000',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Room Types ─────────────────────────────────────────
+                    _AdminSectionLabel('Room Types Available'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: roomTypeOptions.map((rt) {
+                        final sel = _pgSelectedRoomTypes.contains(rt);
+                        return FilterChip(
+                          label: Text(rt),
+                          selected: sel,
+                          onSelected: (v) => setState(() {
+                            if (v) {
+                              _pgSelectedRoomTypes.add(rt);
+                            } else {
+                              _pgSelectedRoomTypes.remove(rt);
+                            }
+                          }),
+                          selectedColor: theme.colorScheme.primary.withOpacity(
+                            0.15,
+                          ),
+                          checkmarkColor: theme.colorScheme.primary,
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Amenities ──────────────────────────────────────────
+                    _AdminSectionLabel('Amenities'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: amenityOptions.map((a) {
+                        final sel = _pgSelectedAmenities.contains(a);
+                        return FilterChip(
+                          label: Text(a, style: const TextStyle(fontSize: 12)),
+                          selected: sel,
+                          onSelected: (v) => setState(() {
+                            if (v) {
+                              _pgSelectedAmenities.add(a);
+                            } else {
+                              _pgSelectedAmenities.remove(a);
+                            }
+                          }),
+                          selectedColor: Colors.green.withOpacity(0.15),
+                          checkmarkColor: Colors.green,
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Metro & Contact ────────────────────────────────────
+                    _AdminSectionLabel('Metro & Contact'),
+                    const SizedBox(height: 10),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: TextFormField(
+                            controller: _pgNearestMetroController,
+                            decoration: const InputDecoration(
+                              labelText: 'Nearest Metro Station',
+                              hintText: 'Vishwa Vidyalaya',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(LucideIcons.train, size: 18),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _pgMetroMinsController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Walk (mins)',
+                              hintText: '5',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _pgContactPhoneController,
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                              labelText: 'Contact Phone',
+                              hintText: '+91-9876543210',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(LucideIcons.phone, size: 18),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _pgContactEmailController,
+                            decoration: const InputDecoration(
+                              labelText: 'Contact Email',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(LucideIcons.mail, size: 18),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    TextFormField(
+                      controller: _pgMapsUrlController,
+                      decoration: const InputDecoration(
+                        labelText: 'Google Maps URL',
+                        hintText: 'https://maps.google.com/...',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(LucideIcons.mapPin, size: 18),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Description & Images ───────────────────────────────
+                    _AdminSectionLabel('Description & Images'),
+                    const SizedBox(height: 10),
+
+                    TextFormField(
+                      controller: _pgDescriptionController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        hintText:
+                            'Describe the PG — location benefits, food quality, security...',
+                        border: OutlineInputBorder(),
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    TextFormField(
+                      controller: _pgImagesController,
+                      decoration: const InputDecoration(
+                        labelText: 'Image URLs (comma-separated)',
+                        hintText: 'https://example.com/img1.jpg, https://...',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(LucideIcons.image, size: 18),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Ratings & Flags ────────────────────────────────────
+                    _AdminSectionLabel('Rating & Flags'),
+                    const SizedBox(height: 10),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Rating: ${_pgRating.toStringAsFixed(1)} ⭐',
+                                style: GoogleFonts.outfit(fontSize: 13),
+                              ),
+                              Slider(
+                                value: _pgRating,
+                                min: 1.0,
+                                max: 5.0,
+                                divisions: 8,
+                                label: _pgRating.toStringAsFixed(1),
+                                onChanged: (v) => setState(() => _pgRating = v),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: _campusSelectedLine,
+                          child: TextFormField(
+                            initialValue: _pgReviewCount.toString(),
+                            keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
-                              labelText: 'Metro Line',
+                              labelText: 'Review Count',
                               border: OutlineInputBorder(),
                             ),
-                            items: ['Yellow', 'Pink', 'Violet', 'Blue'].map((
-                              c,
-                            ) {
-                              return DropdownMenuItem<String>(
-                                value: c,
-                                child: Text(c),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              if (val != null)
-                                setState(() => _campusSelectedLine = val);
-                            },
+                            onChanged: (v) =>
+                                _pgReviewCount = int.tryParse(v) ?? 0,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _campusNearestMetroController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nearest Metro Station',
-                        hintText: 'E.g. Vishwa Vidyalaya',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(LucideIcons.train),
-                      ),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Required' : null,
-                    ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
+
                     Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
-                            controller: _campusWalkingDistanceController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Walking Distance (mins)',
-                              border: OutlineInputBorder(),
+                          child: SwitchListTile(
+                            title: Text(
+                              'Meals Included',
+                              style: GoogleFonts.outfit(fontSize: 13),
                             ),
-                            validator: (v) =>
-                                v == null || v.isEmpty ? 'Required' : null,
+                            value: _pgMealsIncluded,
+                            onChanged: (v) =>
+                                setState(() => _pgMealsIncluded = v),
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
                           ),
                         ),
-                        const SizedBox(width: 12),
                         Expanded(
-                          child: TextFormField(
-                            controller: _campusRickshawFareController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Rickshaw Fare (₹)',
-                              border: OutlineInputBorder(),
+                          child: SwitchListTile(
+                            title: Text(
+                              'Verified ✓',
+                              style: GoogleFonts.outfit(fontSize: 13),
                             ),
-                            validator: (v) =>
-                                v == null || v.isEmpty ? 'Required' : null,
+                            value: _pgIsVerified,
+                            activeColor: Colors.blue,
+                            onChanged: (v) => setState(() => _pgIsVerified = v),
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
                           ),
                         ),
-                        const SizedBox(width: 12),
                         Expanded(
-                          child: TextFormField(
-                            controller: _campusPgRentController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Avg PG Rent (₹)',
-                              border: OutlineInputBorder(),
+                          child: SwitchListTile(
+                            title: Text(
+                              'Active',
+                              style: GoogleFonts.outfit(fontSize: 13),
                             ),
-                            validator: (v) =>
-                                v == null || v.isEmpty ? 'Required' : null,
+                            value: _pgIsActive,
+                            activeColor: Colors.green,
+                            onChanged: (v) => setState(() => _pgIsActive = v),
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<double>(
-                      value: _campusSelectedSafety,
-                      decoration: const InputDecoration(
-                        labelText: 'Safety Index / Rating',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(LucideIcons.shieldCheck),
+
+                    const SizedBox(height: 20),
+
+                    // ── Nearby Colleges (association) ──────────────────────
+                    _AdminSectionLabel('Nearby Colleges'),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Link colleges to this PG with walking/rickshaw distance.',
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        color: Colors.grey,
                       ),
-                      items: [4.0, 4.2, 4.5, 4.7, 4.8, 5.0].map((s) {
-                        return DropdownMenuItem<double>(
-                          value: s,
-                          child: Text('$s / 5.0 Safety Rating'),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null)
-                          setState(() => _campusSelectedSafety = val);
-                      },
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _campusDescriptionController,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Transit & PG Description details',
-                        hintText:
-                            'Mention PG localities nearby, shared rickshaw details, or tips...',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Required' : null,
+                    const SizedBox(height: 10),
+
+                    // College association rows
+                    ..._pgNearbyColleges.asMap().entries.map((entry) {
+                      final i = entry.key;
+                      final col = entry.value;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.04)
+                              : Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: theme.dividerColor),
+                        ),
+                        child: Row(
+                          children: [
+                            // College dropdown
+                            Expanded(
+                              flex: 3,
+                              child: DropdownButtonFormField<String>(
+                                value: col['college_name'] as String?,
+                                isExpanded: true,
+                                decoration: const InputDecoration(
+                                  labelText: 'College',
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                                items: duColleges
+                                    .map(
+                                      (c) => DropdownMenuItem(
+                                        value: c,
+                                        child: Text(
+                                          c,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (v) => setState(
+                                  () =>
+                                      _pgNearbyColleges[i]['college_name'] = v,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // Distance
+                            SizedBox(
+                              width: 70,
+                              child: TextFormField(
+                                initialValue: (col['distance_mins'] ?? '')
+                                    .toString(),
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  labelText: 'Mins',
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                                onChanged: (v) =>
+                                    _pgNearbyColleges[i]['distance_mins'] =
+                                        int.tryParse(v),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // Type dropdown
+                            SizedBox(
+                              width: 90,
+                              child: DropdownButtonFormField<String>(
+                                value:
+                                    col['distance_type'] as String? ?? 'walk',
+                                isExpanded: true,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                                items: ['walk', 'rickshaw', 'auto']
+                                    .map(
+                                      (t) => DropdownMenuItem(
+                                        value: t,
+                                        child: Text(
+                                          t,
+                                          style: const TextStyle(fontSize: 11),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (v) => setState(
+                                  () =>
+                                      _pgNearbyColleges[i]['distance_type'] = v,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            // Remove
+                            IconButton(
+                              icon: const Icon(
+                                LucideIcons.x,
+                                size: 16,
+                                color: Colors.red,
+                              ),
+                              onPressed: () =>
+                                  setState(() => _pgNearbyColleges.removeAt(i)),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+
+                    // Add college button
+                    TextButton.icon(
+                      onPressed: () => setState(() {
+                        _pgNearbyColleges.add({
+                          'college_name': duColleges.first,
+                          'distance_mins': 10,
+                          'distance_type': 'walk',
+                        });
+                      }),
+                      icon: const Icon(LucideIcons.plusCircle, size: 16),
+                      label: const Text('Add Nearby College'),
                     ),
+
                     const SizedBox(height: 24),
+
+                    // ── Submit ─────────────────────────────────────────────
                     SizedBox(
                       width: double.infinity,
-                      height: 50,
+                      height: 52,
                       child: ElevatedButton.icon(
-                        onPressed: _isPublishingCampusGuide
-                            ? null
-                            : () async {
-                                if (!_campusFormKey.currentState!.validate())
-                                  return;
-                                setState(() => _isPublishingCampusGuide = true);
-
-                                final college = _campusCollegeNameController
-                                    .text
-                                    .trim();
-                                final id =
-                                    '${college.split(' ').first.toLowerCase()}_guide_${DateTime.now().millisecondsSinceEpoch}';
-
-                                final newItem = CampusGuideItem(
-                                  id: id,
-                                  collegeName: college,
-                                  campusType: _campusSelectedType.toLowerCase(),
-                                  nearestMetro: _campusNearestMetroController
-                                      .text
-                                      .trim(),
-                                  metroLine: _campusSelectedLine,
-                                  walkingDistanceMins:
-                                      int.tryParse(
-                                        _campusWalkingDistanceController.text,
-                                      ) ??
-                                      10,
-                                  eRickshawFare:
-                                      int.tryParse(
-                                        _campusRickshawFareController.text,
-                                      ) ??
-                                      10,
-                                  avgPgRent:
-                                      int.tryParse(
-                                        _campusPgRentController.text,
-                                      ) ??
-                                      10000,
-                                  safetyIndex: _campusSelectedSafety,
-                                  description: _campusDescriptionController.text
-                                      .trim(),
-                                );
-
-                                final success =
-                                    await Provider.of<DuCampusService>(
-                                      context,
-                                      listen: false,
-                                    ).addOrUpdateGuide(newItem);
-
-                                setState(
-                                  () => _isPublishingCampusGuide = false,
-                                );
-
-                                if (mounted) {
-                                  _campusCollegeNameController.clear();
-                                  _campusNearestMetroController.clear();
-                                  _campusDescriptionController.clear();
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        success
-                                            ? 'Campus guide details published successfully!'
-                                            : 'Updated locally (Supabase table connection skipped).',
-                                      ),
-                                      backgroundColor: success
-                                          ? Colors.green
-                                          : Colors.orange,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                }
-                              },
-                        icon: _isPublishingCampusGuide
+                        onPressed: _isSavingPg ? null : _savePg,
+                        icon: _isSavingPg
                             ? const SizedBox(
-                                width: 20,
-                                height: 20,
+                                width: 18,
+                                height: 18,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   color: Colors.white,
                                 ),
                               )
-                            : const Icon(LucideIcons.plusCircle),
+                            : Icon(
+                                _editingPgId != null
+                                    ? LucideIcons.save
+                                    : LucideIcons.plusCircle,
+                              ),
                         label: Text(
-                          _isPublishingCampusGuide
-                              ? 'Publishing...'
-                              : 'Publish Guide Card',
+                          _isSavingPg
+                              ? 'Saving...'
+                              : _editingPgId != null
+                              ? 'Update PG Listing'
+                              : 'Publish PG Listing',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
+                            fontSize: 15,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.primary,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                       ),
@@ -3173,98 +3864,150 @@ class _AdminDashboardState extends State<AdminDashboard>
               ),
             ),
           ),
-          const SizedBox(height: 32),
 
-          // Active guides list
-          Text(
-            'Active Campus Guide Cards',
-            style: GoogleFonts.outfit(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+          const SizedBox(height: 32),
+          const Divider(),
+          const SizedBox(height: 16),
+
+          // ── EXISTING PG LISTINGS ────────────────────────────────────────────
+          Row(
+            children: [
+              Text(
+                'All PG Listings (${_allPgs.length})',
+                style: GoogleFonts.outfit(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(LucideIcons.refreshCw, size: 18),
+                onPressed: _fetchAdminPgs,
+                tooltip: 'Refresh',
+              ),
+            ],
           ),
           const SizedBox(height: 12),
 
-          campusService.guides.isEmpty
-              ? const Center(child: Text('No guides active.'))
+          _isLoadingPgs
+              ? const Center(child: CircularProgressIndicator())
+              : _allPgs.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      'No PG listings yet.\nAdd one above to get started.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(color: Colors.grey),
+                    ),
+                  ),
+                )
               : ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: campusService.guides.length,
-                  itemBuilder: (context, index) {
-                    final g = campusService.guides[index];
-                    return Container(
+                  itemCount: _allPgs.length,
+                  itemBuilder: (ctx, i) {
+                    final pg = _allPgs[i];
+                    final id = pg['id'] as int;
+                    final isActive = pg['is_active'] as bool? ?? true;
+                    final isVerified = pg['is_verified'] as bool? ?? false;
+                    final gender = pg['gender'] ?? 'Co-Ed';
+                    final genderColor = gender == 'Girls'
+                        ? Colors.pink
+                        : gender == 'Boys'
+                        ? Colors.blue
+                        : Colors.teal;
+
+                    return Card(
                       margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: theme.cardColor,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: theme.dividerColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
-                                Text(
-                                  g.collegeName,
-                                  style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13.5,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            pg['name'] ?? '',
+                                            style: GoogleFonts.outfit(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          if (isVerified) ...[
+                                            const SizedBox(width: 6),
+                                            const Icon(
+                                              LucideIcons.badgeCheck,
+                                              size: 14,
+                                              color: Colors.blue,
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${pg['area']} · ${pg['campus_zone']}  ·  ₹${pg['rent_min']} – ₹${pg['rent_max']}',
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Metro: ${g.nearestMetro} (${g.metroLine} Line) | PG: ₹${g.avgPgRent}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    color: Colors.grey,
+                                // Edit
+                                IconButton(
+                                  icon: const Icon(
+                                    LucideIcons.edit3,
+                                    size: 18,
+                                    color: Colors.blue,
                                   ),
+                                  onPressed: () => _populatePgForm(pg),
+                                  tooltip: 'Edit',
+                                ),
+                                // Delete
+                                IconButton(
+                                  icon: const Icon(
+                                    LucideIcons.trash2,
+                                    size: 18,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () =>
+                                      _deletePg(id, pg['name'] ?? ''),
+                                  tooltip: 'Delete',
                                 ),
                               ],
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              LucideIcons.trash2,
-                              color: Colors.red,
-                              size: 18,
-                            ),
-                            onPressed: () async {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Delete Guide Card?'),
-                                  content: Text(
-                                    'Are you sure you want to permanently delete the campus guide for "${g.collegeName}"?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('Cancel'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        Navigator.pop(context);
-                                        await Provider.of<DuCampusService>(
-                                          context,
-                                          listen: false,
-                                        ).deleteGuide(g.id);
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                      child: const Text('Delete'),
-                                    ),
-                                  ],
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 6,
+                              children: [
+                                _AdminBadge(gender, genderColor),
+                                _AdminBadge(
+                                  isActive ? 'Live' : 'Draft',
+                                  isActive ? Colors.green : Colors.grey,
                                 ),
-                              );
-                            },
-                          ),
-                        ],
+                                if (pg['meals_included'] == true)
+                                  _AdminBadge('Meals ✓', Colors.orange),
+                                if (pg['nearest_metro'] != null)
+                                  _AdminBadge(
+                                    '🚇 ${pg['nearest_metro']}',
+                                    Colors.blueGrey,
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -3273,6 +4016,22 @@ class _AdminDashboardState extends State<AdminDashboard>
       ),
     );
   }
+}
+
+// ─── Small section label helper ───────────────────────────────────────────
+Widget _AdminSectionLabel(String label) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 2),
+    child: Text(
+      label.toUpperCase(),
+      style: GoogleFonts.outfit(
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        color: Colors.grey,
+        letterSpacing: 0.8,
+      ),
+    ),
+  );
 }
 
 class _ToggleChip extends StatelessWidget {

@@ -1,5 +1,6 @@
 {
-  "outputDirectory": "web",
+  "buildCommand": "flutter build web",
+  "outputDirectory": "build/web",
   "rewrites": [
     {
       "source": "/((?!\\.well-known).*)",

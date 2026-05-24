@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/du_models.dart';
 import 'du_college_detail_screen.dart';
+import '../compare/compare_screen.dart';
 
 class DuCollegeDiscoveryScreen extends StatefulWidget {
   const DuCollegeDiscoveryScreen({super.key});
@@ -69,6 +70,16 @@ class _DuCollegeDiscoveryScreenState extends State<DuCollegeDiscoveryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Explore DU Colleges', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.gitCompare),
+            tooltip: 'Compare Colleges',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CompareScreen()),
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [

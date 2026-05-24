@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -7,6 +8,7 @@ import '../../providers/cutoff_provider.dart';
 import '../prediction/prediction_results_screen.dart';
 import '../prediction/du_input_screen.dart';
 import '../cutoff/cutoff_explorer_screen.dart';
+import '../compare/compare_screen.dart';
 import '../wishlist/wishlist_tab.dart';
 import '../timeline/csas_timeline_screen.dart';
 import '../notifications/notification_screen.dart';
@@ -37,10 +39,17 @@ class _HomeTabState extends State<HomeTab> {
   List<Map<String, dynamic>> _banners = [];
   bool _isLoadingBanners = true;
 
+  // ── Live Feed (timeline ticker) ──────────────────────────────────────────
+  List<String> _tickerItems = [];
+  int _tickerIndex = 0;
+  Timer? _tickerTimer;
+  bool _isLoadingTicker = true;
+
   @override
   void initState() {
     super.initState();
     _fetchBanners();
+    _fetchTickerItems();
   }
 
   Future<void> _fetchBanners() async {
@@ -49,19 +58,74 @@ class _HomeTabState extends State<HomeTab> {
           .from('dashboard_banners')
           .select()
           .order('created_at', ascending: false);
-      setState(() {
-        _banners = List<Map<String, dynamic>>.from(res);
-        _isLoadingBanners = false;
-      });
+      if (mounted) {
+        setState(() {
+          _banners = List<Map<String, dynamic>>.from(res);
+          _isLoadingBanners = false;
+        });
+      }
     } catch (e) {
       debugPrint('Error fetching banners: $e');
-      setState(() => _isLoadingBanners = false);
+      if (mounted) setState(() => _isLoadingBanners = false);
     }
+  }
+
+  // ── Fetch latest active timeline events for the ticker ───────────────────
+  Future<void> _fetchTickerItems() async {
+    try {
+      final res = await Supabase.instance.client
+          .from('csas_timeline')
+          .select('title, event_date, is_important, category')
+          .eq('is_active', true)
+          .order('sort_order')
+          .order('event_date')
+          .limit(15); // enough to keep the ticker varied
+
+      if (!mounted) return;
+
+      final items = (res as List).map((row) {
+        final title = row['title'] as String? ?? '';
+        final date = row['event_date'] as String? ?? '';
+        final isImportant = row['is_important'] as bool? ?? false;
+        final prefix = isImportant ? '⚠️' : '📌';
+        return date.isNotEmpty ? '$prefix $title · $date' : '$prefix $title';
+      }).toList();
+
+      setState(() {
+        _tickerItems = items.isEmpty
+            ? ['📌 No upcoming events. Check back soon!']
+            : items;
+        _isLoadingTicker = false;
+      });
+
+      _startTickerTimer();
+    } catch (e) {
+      debugPrint('Error fetching ticker: $e');
+      if (mounted) {
+        setState(() {
+          _tickerItems = ['📌 CSAS 2026 admissions underway — stay tuned!'];
+          _isLoadingTicker = false;
+        });
+        _startTickerTimer();
+      }
+    }
+  }
+
+  void _startTickerTimer() {
+    _tickerTimer?.cancel();
+    if (_tickerItems.length <= 1) return;
+    _tickerTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted) return;
+      setState(() {
+        _tickerIndex = (_tickerIndex + 1) % _tickerItems.length;
+      });
+    });
   }
 
   @override
   void dispose() {
     _carouselController.dispose();
+    _tickerTimer?.cancel();
     super.dispose();
   }
 
@@ -229,7 +293,6 @@ class _HomeTabState extends State<HomeTab> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Notification Icon
                     Container(
                       decoration: BoxDecoration(
                         color: theme.cardColor,
@@ -252,53 +315,108 @@ class _HomeTabState extends State<HomeTab> {
               ),
               const SizedBox(height: 24),
 
-              // ── Scrolling Notice Ticker (Official DU Feed) ───────────────
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
+              // ── Dynamic Live Feed Ticker ─────────────────────────────────
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CsasTrackerScreen()),
                 ),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF161C24) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: theme.dividerColor),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'LIVE FEED',
-                        style: GoogleFonts.outfit(
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red.shade800,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF161C24) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: theme.dividerColor),
+                  ),
+                  child: Row(
+                    children: [
+                      // LIVE badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         child: Text(
-                          '⚠️ Phase 1 CSAS Registration Extended! Complete mark sheets upload before deadline.',
-                          style: GoogleFonts.inter(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w500,
-                            color: isDark ? Colors.white70 : Colors.black87,
+                          'LIVE',
+                          style: GoogleFonts.outfit(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red.shade800,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+
+                      // Animated ticker text
+                      Expanded(
+                        child: _isLoadingTicker
+                            ? Text(
+                                'Loading timeline…',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11.5,
+                                  color: Colors.grey,
+                                ),
+                              )
+                            : AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 400),
+                                transitionBuilder: (child, anim) =>
+                                    FadeTransition(
+                                      opacity: anim,
+                                      child: SlideTransition(
+                                        position: Tween<Offset>(
+                                          begin: const Offset(0, 0.3),
+                                          end: Offset.zero,
+                                        ).animate(anim),
+                                        child: child,
+                                      ),
+                                    ),
+                                child: Text(
+                                  _tickerItems.isNotEmpty
+                                      ? _tickerItems[_tickerIndex]
+                                      : '',
+                                  key: ValueKey(_tickerIndex),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black87,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                      ),
+
+                      // Item count dot indicator
+                      if (_tickerItems.length > 1) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          '${_tickerIndex + 1}/${_tickerItems.length}',
+                          style: GoogleFonts.outfit(
+                            fontSize: 9,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(width: 6),
+                      Icon(
+                        LucideIcons.chevronRight,
+                        size: 14,
+                        color: Colors.grey.shade400,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -311,7 +429,6 @@ class _HomeTabState extends State<HomeTab> {
                   onPageChanged: (index) =>
                       setState(() => _activeCarouselSlide = index),
                   children: [
-                    // Slide 1: DU Predictor
                     _buildFlagshipSlide(
                       title: 'DU CUET Predictor',
                       subtitle:
@@ -322,16 +439,13 @@ class _HomeTabState extends State<HomeTab> {
                         const Color(0xFF6366F1),
                         const Color(0xFF4F46E5),
                       ],
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const DuInputScreen(),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const DuInputScreen(),
+                        ),
+                      ),
                     ),
-                    // Slide 2: CSAS Preference generator
                     _buildFlagshipSlide(
                       title: 'Preference Sheet Builder',
                       subtitle:
@@ -359,7 +473,6 @@ class _HomeTabState extends State<HomeTab> {
                 ),
               ),
               const SizedBox(height: 12),
-              // Indicator dots
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(2, (index) {
@@ -383,7 +496,11 @@ class _HomeTabState extends State<HomeTab> {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Consumer<DuTrackerProvider>(
                   builder: (context, tracker, child) {
-                    final progress = tracker.getPhaseProgress('phase1');
+                    // Use first category's progress dynamically
+                    final firstCat = tracker.categories.isNotEmpty
+                        ? tracker.categories.first
+                        : 'Phase 1';
+                    final progress = tracker.getPhaseProgress(firstCat);
                     final countdown = tracker.getCountdownString(
                       tracker.phase1Deadline,
                     );
@@ -402,14 +519,12 @@ class _HomeTabState extends State<HomeTab> {
                         ],
                       ),
                       child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const CsasTrackerScreen(),
-                            ),
-                          );
-                        },
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CsasTrackerScreen(),
+                          ),
+                        ),
                         borderRadius: BorderRadius.circular(24),
                         child: Padding(
                           padding: const EdgeInsets.all(20),
@@ -459,7 +574,7 @@ class _HomeTabState extends State<HomeTab> {
                               ),
                               const Divider(height: 24),
                               Text(
-                                'Phase 1 Registration Tracker',
+                                '$firstCat Tracker',
                                 style: GoogleFonts.outfit(
                                   fontSize: 17,
                                   fontWeight: FontWeight.bold,
@@ -516,12 +631,11 @@ class _HomeTabState extends State<HomeTab> {
               ),
               const SizedBox(height: 28),
 
-              // ── Grid Section: Campus Transit Hub & CSAS Guideline Guide ──
+              // ── Grid Section ─────────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
                   children: [
-                    // Box 1: Campus Transit guide
                     Expanded(
                       child: _buildGridPortal(
                         title: 'Campus Hub',
@@ -529,18 +643,15 @@ class _HomeTabState extends State<HomeTab> {
                         badge: 'Transit & PG info',
                         color: const Color(0xFFEC4899),
                         icon: LucideIcons.mapPin,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const CampusHubScreen(),
-                            ),
-                          );
-                        },
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CampusHubScreen(),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
-                    // Box 2: CSAS Guides
                     Expanded(
                       child: _buildGridPortal(
                         title: 'Admissions FAQ',
@@ -548,14 +659,12 @@ class _HomeTabState extends State<HomeTab> {
                         badge: 'Counselling PDF',
                         color: const Color(0xFFF59E0B),
                         icon: LucideIcons.bookOpen,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const CounsellingGuideScreen(),
-                            ),
-                          );
-                        },
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CounsellingGuideScreen(),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -563,7 +672,7 @@ class _HomeTabState extends State<HomeTab> {
               ),
               const SizedBox(height: 32),
 
-              // ── Quick Minimalist Action Row ──────────────────────────────
+              // ── Quick Action Row ─────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
@@ -584,51 +693,54 @@ class _HomeTabState extends State<HomeTab> {
                           icon: LucideIcons.building,
                           label: 'Colleges',
                           color: Colors.blue,
-                          onTap: () {
-                            Provider.of<NavigationProvider>(
-                              context,
-                              listen: false,
-                            ).setIndex(1);
-                          },
+                          onTap: () => Provider.of<NavigationProvider>(
+                            context,
+                            listen: false,
+                          ).setIndex(1),
                         ),
                         _buildQuickIcon(
                           icon: LucideIcons.bookOpen,
                           label: 'Cutoffs',
                           color: Colors.green,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CutoffExplorerScreen(),
-                              ),
-                            );
-                          },
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CutoffExplorerScreen(),
+                            ),
+                          ),
+                        ),
+                        _buildQuickIcon(
+                          icon: LucideIcons.gitCompare,
+                          label: 'Compare',
+                          color: Colors.purple,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CompareScreen(),
+                            ),
+                          ),
                         ),
                         _buildQuickIcon(
                           icon: LucideIcons.calendar,
                           label: 'Timeline',
                           color: Colors.orange,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CsasTimelineScreen(),
-                              ),
-                            );
-                          },
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CsasTimelineScreen(),
+                            ),
+                          ),
                         ),
                         _buildQuickIcon(
                           icon: LucideIcons.heart,
                           label: 'Wishlist',
                           color: Colors.red,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const WishlistTab(),
-                              ),
-                            );
-                          },
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const WishlistTab(),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -642,7 +754,6 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  // Carousel item compiler
   Widget _buildFlagshipSlide({
     required String title,
     required String subtitle,
@@ -738,7 +849,6 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  // Grid Portal boxes
   Widget _buildGridPortal({
     required String title,
     required String subtitle,
@@ -802,7 +912,6 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  // Quick Action Buttons
   Widget _buildQuickIcon({
     required IconData icon,
     required String label,
@@ -813,7 +922,7 @@ class _HomeTabState extends State<HomeTab> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         child: Column(
           children: [
             Container(
