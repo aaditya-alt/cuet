@@ -1,7 +1,7 @@
 import 'package:cuet/screens/prediction/du_college_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../models/du_models.dart';
 import '../../providers/du_wishlist_provider.dart';

@@ -9,17 +9,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class CsasTimelineEvent {
   final int id;
   final String title;
-  final String eventDate; // stored as text e.g. "2026-06-15"
-  final String? eventTime; // e.g. "23:59"
+  final String eventDate; // Display text: "28 May 2026"
+  final String? eventTime; // Display text: "11:00 PM"
   final String? description;
   final bool isCompleted;
   final int sortOrder;
-  final String category; // "Phase 1" / "Phase 2" / "Phase 3" / "General"
+  final String category;
   final String iconName;
   final bool isImportant;
   final String? linkUrl;
   final String? linkLabel;
   final bool isActive;
+  final DateTime? deadline; // ← NEW: machine-readable countdown target from DB
 
   CsasTimelineEvent({
     required this.id,
@@ -35,9 +36,31 @@ class CsasTimelineEvent {
     this.linkUrl,
     this.linkLabel,
     required this.isActive,
+    this.deadline,
   });
 
+  DateTime get dateTime {
+    try {
+      final datePart = eventDate.trim();
+      final timePart = (eventTime?.trim().isNotEmpty == true)
+          ? eventTime!.trim()
+          : '23:59:59';
+      return DateTime.parse('$datePart $timePart');
+    } catch (_) {
+      return DateTime(2099); // push unknown dates to the end
+    }
+  }
+
   factory CsasTimelineEvent.fromJson(Map<String, dynamic> j) {
+    // Parse deadline from DB (stored as ISO 8601 UTC string by Supabase)
+    DateTime? deadline;
+    final raw = j['deadline'];
+    if (raw != null && raw.toString().isNotEmpty) {
+      try {
+        deadline = DateTime.parse(raw.toString()).toLocal();
+      } catch (_) {}
+    }
+
     return CsasTimelineEvent(
       id: j['id'] as int,
       title: j['title'] as String? ?? '',
@@ -52,21 +75,24 @@ class CsasTimelineEvent {
       linkUrl: j['link_url'] as String?,
       linkLabel: j['link_label'] as String?,
       isActive: j['is_active'] as bool? ?? true,
+      deadline: deadline,
     );
   }
 
-  /// Parses event_date + event_time into a DateTime.
-  /// Falls back gracefully if format is unexpected.
-  DateTime get dateTime {
-    try {
-      final datePart = eventDate.trim();
-      final timePart = (eventTime?.trim().isNotEmpty == true)
-          ? eventTime!.trim()
-          : '23:59:59';
-      return DateTime.parse('$datePart $timePart');
-    } catch (_) {
-      return DateTime(2099); // push unknown dates to the end
-    }
+  /// Whether this event has a live countdown available.
+  bool get hasDeadline => deadline != null;
+
+  /// Whether this event's deadline is in the past.
+  bool get isPast => deadline != null && deadline!.isBefore(DateTime.now());
+
+  /// Whether this event is upcoming and has an active countdown.
+  bool get isUpcoming => deadline != null && deadline!.isAfter(DateTime.now());
+
+  /// Duration remaining until the deadline. Null if no deadline or already past.
+  Duration? get timeRemaining {
+    if (deadline == null) return null;
+    final diff = deadline!.difference(DateTime.now());
+    return diff.isNegative ? null : diff;
   }
 }
 
@@ -79,12 +105,10 @@ class DuTrackerProvider extends ChangeNotifier {
 
   Timer? _countdownTimer;
 
-  // All active events from csas_timeline
   List<CsasTimelineEvent> _events = [];
   bool isLoading = true;
   String? loadError;
 
-  // Per-task local checkbox states (keyed by event id)
   final Map<String, bool> _taskStates = {};
 
   DuTrackerProvider(this._prefs) {
@@ -98,20 +122,19 @@ class DuTrackerProvider extends ChangeNotifier {
   List<CsasTimelineEvent> get allEvents => _events;
   Map<String, bool> get taskStates => _taskStates;
 
-  /// Events grouped by category, only active ones, sorted by sort_order.
+  /// All active events grouped by category, sorted by sort_order.
   Map<String, List<CsasTimelineEvent>> get eventsByCategory {
     final Map<String, List<CsasTimelineEvent>> map = {};
     for (final e in _events.where((e) => e.isActive)) {
       map.putIfAbsent(e.category, () => []).add(e);
     }
-    // Sort each category's list by sort_order
     for (final list in map.values) {
       list.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     }
     return map;
   }
 
-  /// Sorted list of unique categories in sort_order sequence.
+  /// Ordered list of unique active categories.
   List<String> get categories {
     final seen = <String>{};
     return _events
@@ -121,26 +144,42 @@ class DuTrackerProvider extends ChangeNotifier {
         .toList();
   }
 
-  // ── Phase deadline helpers ─────────────────────────────────────────────────
-  // These find the latest event_date in each Phase category as the deadline.
+  // ── Per-event deadline helpers ─────────────────────────────────────────────
 
-  DateTime _latestDateForCategory(String cat) {
-    final evs = eventsByCategory[cat] ?? [];
-    if (evs.isEmpty) return DateTime(2099);
-    return evs.map((e) => e.dateTime).reduce((a, b) => a.isAfter(b) ? a : b);
+  /// The NEXT upcoming event that has a deadline (first to expire).
+  CsasTimelineEvent? get nextDeadlineEvent {
+    final upcoming = _events.where((e) => e.isActive && e.isUpcoming).toList()
+      ..sort((a, b) => a.deadline!.compareTo(b.deadline!));
+    return upcoming.isEmpty ? null : upcoming.first;
   }
 
-  DateTime get phase1Deadline => _latestDateForCategory('Phase 1');
-  DateTime get phase2Deadline => _latestDateForCategory('Phase 2');
-  DateTime get phase3Deadline => _latestDateForCategory('Phase 3');
+  /// All events with deadlines, sorted soonest first.
+  List<CsasTimelineEvent> get eventsWithDeadlines {
+    return _events.where((e) => e.isActive && e.hasDeadline).toList()
+      ..sort((a, b) => a.deadline!.compareTo(b.deadline!));
+  }
+
+  /// Upcoming events with deadlines only.
+  List<CsasTimelineEvent> get upcomingDeadlines {
+    return eventsWithDeadlines.where((e) => e.isUpcoming).toList();
+  }
+
+  /// Most urgent deadline per category (used for phase summary cards).
+  DateTime? deadlineForCategory(String category) {
+    final evs = (eventsByCategory[category] ?? [])
+        .where((e) => e.isUpcoming)
+        .toList();
+    if (evs.isEmpty) return null;
+    evs.sort((a, b) => a.deadline!.compareTo(b.deadline!));
+    return evs.first.deadline;
+  }
 
   // ── Checklist helpers ──────────────────────────────────────────────────────
 
   String _taskKey(int eventId) => 'csas_task_event_$eventId';
 
   void _loadLocalTaskStates() {
-    final keys = _prefs.getKeys();
-    for (final k in keys) {
+    for (final k in _prefs.getKeys()) {
       if (k.startsWith('csas_task_event_')) {
         _taskStates[k] = _prefs.getBool(k) ?? false;
       }
@@ -157,9 +196,8 @@ class DuTrackerProvider extends ChangeNotifier {
 
   bool isTaskChecked(int eventId) => _taskStates[_taskKey(eventId)] ?? false;
 
-  /// Progress 0.0–1.0 for a given category based on local checkbox states.
   double getPhaseProgress(String category) {
-    final evs = (eventsByCategory[category] ?? []);
+    final evs = eventsByCategory[category] ?? [];
     if (evs.isEmpty) return 0.0;
     final checked = evs.where((e) => isTaskChecked(e.id)).length;
     return checked / evs.length;
@@ -181,7 +219,7 @@ class DuTrackerProvider extends ChangeNotifier {
           .order('event_date');
 
       _events = (res as List)
-          .map((r) => CsasTimelineEvent.fromJson(r))
+          .map((r) => CsasTimelineEvent.fromJson(r as Map<String, dynamic>))
           .toList();
     } catch (e) {
       loadError = 'Could not load timeline: $e';
@@ -192,7 +230,58 @@ class DuTrackerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Countdown ──────────────────────────────────────────────────────────────
+  // ── Countdown formatting ───────────────────────────────────────────────────
+
+  /// Human-readable countdown string for any DateTime.
+  String countdownString(DateTime deadline) {
+    final diff = deadline.difference(DateTime.now());
+    if (diff.isNegative) return 'Closed';
+    final d = diff.inDays;
+    final h = diff.inHours % 24;
+    final m = diff.inMinutes % 60;
+    final s = diff.inSeconds % 60;
+    if (d > 30) return '${d}d left';
+    if (d > 0) return '${d}d ${h}h left';
+    if (h > 0) return '${h}h ${m}m left';
+    if (m > 0) return '${m}m ${s}s left';
+    return '${s}s left';
+  }
+
+  /// Countdown for a specific event. Returns null if no deadline or closed.
+  String? eventCountdownString(CsasTimelineEvent event) {
+    if (!event.hasDeadline) return null;
+    if (event.isPast) return event.isCompleted ? 'Completed' : 'Closed';
+    return countdownString(event.deadline!);
+  }
+
+  /// Urgency level for color coding:
+  /// 0 = no deadline / closed, 1 = >7 days (green), 2 = 1-7 days (amber), 3 = <24h (red)
+  int eventUrgency(CsasTimelineEvent event) {
+    if (!event.hasDeadline || event.isPast) return 0;
+    final diff = event.deadline!.difference(DateTime.now());
+    if (diff.inDays > 7) return 1;
+    if (diff.inDays >= 1) return 2;
+    return 3;
+  }
+
+  // ── Admin: update deadlines ────────────────────────────────────────────────
+  // Called from admin panel when saving a timeline event with a deadline.
+
+  Future<bool> updateEventDeadline(int eventId, DateTime deadline) async {
+    try {
+      await _client
+          .from('csas_timeline')
+          .update({'deadline': deadline.toUtc().toIso8601String()})
+          .eq('id', eventId);
+      await fetchTimeline();
+      return true;
+    } catch (e) {
+      debugPrint('updateEventDeadline error: $e');
+      return false;
+    }
+  }
+
+  // ── Countdown ticker ───────────────────────────────────────────────────────
 
   void _startCountdownTicker() {
     _countdownTimer?.cancel();
@@ -200,22 +289,6 @@ class DuTrackerProvider extends ChangeNotifier {
       notifyListeners();
     });
   }
-
-  String getCountdownString(DateTime deadline) {
-    final diff = deadline.difference(DateTime.now());
-    if (diff.isNegative) return 'Completed / Closed';
-    final d = diff.inDays;
-    final h = diff.inHours % 24;
-    final m = diff.inMinutes % 60;
-    final s = diff.inSeconds % 60;
-    if (d > 0) return '$d d $h hrs left';
-    if (h > 0) return '$h hrs $m mins left';
-    return '$m mins $s secs left';
-  }
-
-  /// Countdown to a specific event's own deadline.
-  String getEventCountdown(CsasTimelineEvent event) =>
-      getCountdownString(event.dateTime);
 
   @override
   void dispose() {

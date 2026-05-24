@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_score_provider.dart';
 import '../../providers/cutoff_provider.dart';
@@ -501,8 +501,8 @@ class _HomeTabState extends State<HomeTab> {
                         ? tracker.categories.first
                         : 'Phase 1';
                     final progress = tracker.getPhaseProgress(firstCat);
-                    final countdown = tracker.getCountdownString(
-                      tracker.phase1Deadline,
+                    final countdown = tracker.countdownString(
+                      tracker.deadlineForCategory(firstCat) ?? DateTime.now(),
                     );
 
                     return Container(

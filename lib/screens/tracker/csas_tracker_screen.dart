@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../providers/du_tracker_provider.dart';
@@ -306,8 +306,8 @@ class _PhaseTab extends StatelessWidget {
     final isAllDone = progress == 1.0;
 
     // Deadline = latest event date in this category
-    final deadline = _latestDateForCategory(category);
-    final countdownStr = tracker.getCountdownString(deadline);
+    final deadline = tracker.deadlineForCategory(category);
+    final countdownStr = tracker.countdownString(deadline ?? DateTime.now());
     final isClosed = countdownStr.contains('Closed');
 
     return RefreshIndicator(
@@ -527,7 +527,9 @@ class _EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isChecked = tracker.isTaskChecked(event.id);
-    final countdown = tracker.getEventCountdown(event);
+    final countdown = tracker.countdownString(
+      tracker.deadlineForCategory(event.category) ?? DateTime.now(),
+    );
     final isClosed = countdown.contains('Closed');
     final isPast = event.dateTime.isBefore(DateTime.now());
 

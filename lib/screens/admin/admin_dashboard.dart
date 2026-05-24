@@ -4,7 +4,7 @@ import '../../providers/du_campus_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -62,6 +62,8 @@ class _AdminDashboardState extends State<AdminDashboard>
   final _timelineTimeController = TextEditingController();
   final _timelineDescController = TextEditingController();
   final _timelineSortController = TextEditingController(text: '0');
+  final _tlDeadlineController = TextEditingController();
+
   bool _isPublishingTimeline = false;
 
   // CSAS Tracker Deadline Controllers
@@ -209,6 +211,7 @@ class _AdminDashboardState extends State<AdminDashboard>
     _timelineDateController.dispose();
     _timelineTimeController.dispose();
     _timelineDescController.dispose();
+    _tlDeadlineController.dispose();
     _timelineSortController.dispose();
     _trackerP1Controller.dispose();
     _trackerP2Controller.dispose();
@@ -1701,6 +1704,20 @@ class _AdminDashboardState extends State<AdminDashboard>
       _tlCategory = event['category'] ?? 'General';
       _tlIconName = event['icon_name'] ?? 'calendar';
       _tlIsImportant = event['is_important'] ?? false;
+      final dl = event['deadline'];
+      if (dl != null) {
+        // Convert UTC from DB to local for display
+        try {
+          final localDt = DateTime.parse(dl.toString()).toLocal();
+          _tlDeadlineController.text =
+              '${localDt.year}-${localDt.month.toString().padLeft(2, '0')}-${localDt.day.toString().padLeft(2, '0')} '
+              '${localDt.hour.toString().padLeft(2, '0')}:${localDt.minute.toString().padLeft(2, '0')}:00';
+        } catch (_) {
+          _tlDeadlineController.clear();
+        }
+      } else {
+        _tlDeadlineController.clear();
+      }
     });
   }
 
@@ -1713,6 +1730,7 @@ class _AdminDashboardState extends State<AdminDashboard>
     _tlSortController.text = '0';
     _tlLinkUrlController.clear();
     _tlLinkLabelController.clear();
+    _tlDeadlineController.clear();
     _tlCategory = 'General';
     _tlIconName = 'calendar';
     _tlIsImportant = false;
@@ -1721,6 +1739,24 @@ class _AdminDashboardState extends State<AdminDashboard>
   Future<void> _saveTimelineEvent() async {
     if (!_timelineFormKey.currentState!.validate()) return;
     setState(() => _isPublishingTimeline = true);
+    DateTime? parsedDeadline;
+    if (_tlDeadlineController.text.trim().isNotEmpty) {
+      try {
+        parsedDeadline = DateTime.parse(_tlDeadlineController.text.trim());
+      } catch (_) {
+        if (mounted)
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Invalid deadline format. Use: 2026-06-15 23:59:00',
+              ),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        setState(() => _isPublishingTimeline = false);
+        return;
+      }
+    }
 
     final payload = {
       'title': _tlTitleController.text.trim(),
@@ -1738,6 +1774,8 @@ class _AdminDashboardState extends State<AdminDashboard>
           ? null
           : _tlLinkLabelController.text.trim(),
       'is_active': true,
+
+      'deadline': parsedDeadline?.toUtc().toIso8601String(),
     };
 
     try {
@@ -1921,6 +1959,28 @@ class _AdminDashboardState extends State<AdminDashboard>
                         ),
                       ],
                     ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _tlDeadlineController,
+                      decoration: InputDecoration(
+                        labelText: 'Countdown Deadline (optional)',
+                        hintText: '2026-06-15 23:59:00',
+                        helperText:
+                            'Enter in local time (IST). Format: YYYY-MM-DD HH:MM:SS',
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(LucideIcons.timer, size: 16),
+                        suffixIcon: _tlDeadlineController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(LucideIcons.x, size: 14),
+                                onPressed: () => setState(
+                                  () => _tlDeadlineController.clear(),
+                                ),
+                              )
+                            : null,
+                      ),
+                      onChanged: (_) => setState(() {}), // rebuild suffix icon
+                    ),
+
                     const SizedBox(height: 14),
 
                     // Description
@@ -2196,6 +2256,50 @@ class _AdminDashboardState extends State<AdminDashboard>
                               _AdminBadge('Important', Colors.red),
                           ],
                         ),
+                        if ((e['deadline'] ?? '').toString().isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(
+                                LucideIcons.timer,
+                                size: 12,
+                                color: Colors.orange.shade600,
+                              ),
+                              const SizedBox(width: 4),
+                              Builder(
+                                builder: (ctx) {
+                                  try {
+                                    final dt = DateTime.parse(
+                                      e['deadline'].toString(),
+                                    ).toLocal();
+                                    final formatted =
+                                        '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+                                    final diff = dt.difference(DateTime.now());
+                                    final isExpired = diff.isNegative;
+                                    return Text(
+                                      'Deadline: $formatted${isExpired ? '  [EXPIRED]' : '  [${diff.inDays}d ${diff.inHours % 24}h left]'}',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 11,
+                                        color: isExpired
+                                            ? Colors.red
+                                            : Colors.orange.shade700,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    );
+                                  } catch (_) {
+                                    return Text(
+                                      'Deadline: ${e['deadline']}',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 11,
+                                        color: Colors.grey,
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
                         const SizedBox(height: 10),
 
                         // Toggles
